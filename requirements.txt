@@ -1,0 +1,7 @@
+faster-whisper>=1.1,<2
+sounddevice>=0.5,<1
+numpy>=1.26,<3
+pyperclip>=1.9,<2
+pystray>=0.19,<1
+Pillow>=10,<13
+sherpa-onnx>=1.12,<2
