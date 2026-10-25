@@ -1,0 +1,11 @@
+.venv/
+models/
+__pycache__/
+*.log
+tests/*.wav
+validation.json
+personal_dictionary.json
+personal_dictionary.tmp
+memory-report.json
+memory-report-*.json
+decoding-report.json
