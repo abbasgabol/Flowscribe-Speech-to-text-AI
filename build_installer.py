@@ -49,7 +49,8 @@ def build():
     installer = destination/'LocalDictation-Setup.exe'
     digest = hashlib.sha256(installer.read_bytes()).hexdigest()
     release = {'version':'0.3.0', 'file':installer.name, 'bytes':installer.stat().st_size,
-               'sha256':digest, 'type':'windows-offline-installer'}
+               'sha256':digest, 'type':'windows-offline-installer',
+               'download_url':'https://github.com/abbasgabol/Flowscribe-Speech-to-text-AI/releases/download/v0.3.0/LocalDictation-Setup.exe'}
     (destination/'release.json').write_text(json.dumps(release, indent=2)+'\n', encoding='utf-8')
     (destination/'SHA256SUMS.txt').write_text(f'{digest}  {installer.name}\n', encoding='ascii')
     print(json.dumps(release, indent=2))
