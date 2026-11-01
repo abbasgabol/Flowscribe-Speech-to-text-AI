@@ -1,0 +1,58 @@
+"""Build a standalone app then a native offline Windows setup wizard."""
+import hashlib
+import importlib.metadata as metadata
+import json
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent
+
+def build():
+    # Model hash checks use the same pinned manifests as the original downloaders.
+    from download_model import FILES, valid
+    from download_accuracy_model import FILES as ACCURACY, valid as accuracy_valid
+    from download_punctuation import FILES as PUNCTUATION
+    for name, digest in FILES.items():
+        assert valid(ROOT/'models/base.en'/name, digest), f'Invalid base model: {name}'
+    for name, (kind, digest) in ACCURACY.items():
+        assert accuracy_valid(ROOT/'models/small.en'/name, kind, digest), f'Invalid accuracy model: {name}'
+    for name, digest in PUNCTUATION.items():
+        assert valid(ROOT/'models/punctuation'/name, digest), f'Invalid punctuation model: {name}'
+    compiler = ROOT/'tools/InnoSetup/ISCC.exe'
+    if not compiler.is_file():
+        raise RuntimeError('Install Inno Setup in tools/InnoSetup before building.')
+    licenses = ROOT/'packaging/licenses'
+    licenses.mkdir(exist_ok=True)
+    for name in ('Whisper', 'Edge-Punct-Casing', 'Sherpa-ONNX', 'CTranslate2', 'ONNXRuntime', 'Tokenizers'):
+        if not (licenses/f'{name}-LICENSE.txt').is_file():
+            raise RuntimeError(f'Missing required redistribution license: {name}')
+    for dist in metadata.distributions():
+        for item in dist.files or []:
+            if any(token in item.name.lower() for token in ('license', 'copying', 'notice')) and '.dist-info' in str(item):
+                source = Path(dist.locate_file(item))
+                if source.is_file():
+                    destination = licenses/dist.metadata['Name']/Path(str(item).split('.dist-info/',1)[-1])
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(source, destination)
+    python_license = Path(sys.base_prefix)/'LICENSE.txt'
+    if python_license.is_file(): shutil.copy2(python_license, licenses/'Python-LICENSE.txt')
+    command = [sys.executable, '-m', 'PyInstaller', '--noconfirm', '--onedir', '--windowed',
+        '--name', 'LocalDictation', '--icon', 'app.ico', '--add-data', 'app.ico;.',
+        '--collect-all', 'faster_whisper', '--collect-all', 'ctranslate2',
+        '--collect-all', 'sherpa_onnx', '--collect-all', 'onnxruntime',
+        '--hidden-import', 'pystray._win32', 'launch.py']
+    subprocess.run(command, cwd=ROOT, check=True)
+    subprocess.run([str(compiler), 'packaging/LocalDictation.iss'], cwd=ROOT, check=True)
+    destination = ROOT/'website/dist/downloads'
+    installer = destination/'LocalDictation-Setup.exe'
+    digest = hashlib.sha256(installer.read_bytes()).hexdigest()
+    release = {'version':'0.3.0', 'file':installer.name, 'bytes':installer.stat().st_size,
+               'sha256':digest, 'type':'windows-offline-installer'}
+    (destination/'release.json').write_text(json.dumps(release, indent=2)+'\n', encoding='utf-8')
+    (destination/'SHA256SUMS.txt').write_text(f'{digest}  {installer.name}\n', encoding='ascii')
+    print(json.dumps(release, indent=2))
+
+if __name__ == '__main__':
+    build()

@@ -25,10 +25,11 @@ from punctuation import Punctuator
 from speech_settings import DECODING
 from text_spacing import normalize_spacing, prepare_insertion
 from time_formatting import format_times
+from app_paths import MODEL_ROOT, RESOURCE_DIR, data_file, FROZEN
 
-MODEL_DIR = Path(__file__).parent / 'models' / 'base.en'
+MODEL_DIR = MODEL_ROOT / 'base.en'
 MODEL_CHOICES = {'Lightweight — base.en': 'base.en', 'Accuracy — small.en': 'small.en'}
-SETTINGS_PATH = Path(__file__).parent / 'app_settings.json'
+SETTINGS_PATH = data_file('app_settings.json')
 RATE = 16000
 
 class App:
@@ -38,7 +39,7 @@ class App:
         self.root = tk.Tk()
         self.root.tk.call('tk', 'scaling', 96 / 72)
         self.root.title('Local Dictation')
-        icon_path = Path(__file__).parent / 'app.ico'
+        icon_path = RESOURCE_DIR / 'app.ico'
         if icon_path.is_file():
             self.root.iconbitmap(str(icon_path))
         self.root.geometry('680x640')
@@ -64,7 +65,7 @@ class App:
         self.punctuator = Punctuator()
         self.dictionary_error = ''
         try:
-            self.dictionary = PersonalDictionary(Path(__file__).parent / 'personal_dictionary.json')
+            self.dictionary = PersonalDictionary(data_file('personal_dictionary.json'))
         except (ValueError, OSError) as exc:
             self.dictionary = None
             self.dictionary_error = f'Personal dictionary unavailable: {exc}'
@@ -172,7 +173,7 @@ class App:
         try:
             folder = MODEL_DIR.parent / self.current_model
             if not (folder / 'model.bin').exists():
-                raise RuntimeError('Model missing. Run setup.bat or setup_accuracy.bat with internet access.')
+                raise RuntimeError('Model missing. Run the installer again to repair the installation.' if FROZEN else 'Model missing. Run setup.bat or setup_accuracy.bat with internet access.')
             # Release the old model before allocating the new one.
             self.model = None
             gc.collect()
@@ -190,7 +191,7 @@ class App:
             return
         if not (MODEL_DIR.parent / selected / 'model.bin').exists():
             self.model_choice.set(next(label for label, name in MODEL_CHOICES.items() if name == self.current_model))
-            self.status.set('Accuracy model is not installed. Run setup_accuracy.bat once.')
+            self.status.set('Run the installer again and select the Accuracy model.' if FROZEN else 'Accuracy model is not installed. Run setup_accuracy.bat once.')
             return
         if selected == self.current_model and self.model is not None:
             return

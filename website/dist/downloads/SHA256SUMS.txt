@@ -1,1 +1,1 @@
-6144d6faed0793b9b5fa2bcd5b86d02676c966b30828e769248346a36e05ef19  Local-Dictation-Windows-0.2.0.zip
+c5146052774010a9deb70ce7456142cfb30d2131355a8f6efcea8a78dbec8919  LocalDictation-Setup.exe

@@ -16,12 +16,22 @@ Its example is scripted; it never records audio. Download anchors point to the
 versioned setup ZIP, and `release.json` supplies size/checksum metadata. The desktop
 app never needs the website after installation.
 
-`build_release.py` produces a deterministic ZIP from an explicit allowlist. Private
-runtime files are excluded. `Setup.cmd` runs `Install.ps1`, which reuses a supported
-64-bit Python or obtains a signed Python installer, creates a virtual environment,
-installs pinned packages, verifies model downloads, and creates a desktop shortcut.
-Initial installation uses the internet; recognition remains fully local afterward.
-This is a source/setup distribution. It is not a signed standalone executable.
+`build_installer.py` packages Python and runtime dependencies with PyInstaller,
+then compiles `packaging/LocalDictation.iss` using Inno Setup. The installer embeds
+verified model files, offers destination/component/shortcut pages, and registers
+an uninstaller. No network is needed during installation or recognition.
+
+`app_paths.py` handles source and installed modes. Bundled assets come from the
+PyInstaller resource directory; models come from the executable's sibling models
+folder. Installed user data goes to `%LOCALAPPDATA%\LocalDictation`, separately
+from the app so permissions and upgrades do not prevent saving corrections. The
+uninstaller preserves user data. Source-mode paths retain their previous behavior.
+
+`build_release.py` still creates an optional developer source ZIP, with separate
+metadata so it cannot overwrite the installer release. Private runtime files are
+excluded from both distributions. `packaged_check.py` exercises the real bundled
+GUI, keyboard-hook registration, speech inference, and punctuation without using
+the microphone or inserting text into another app.
 
 ## Data flow
 

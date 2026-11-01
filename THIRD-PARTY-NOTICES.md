@@ -1,8 +1,9 @@
 # Third-party software
 
-Local Dictation's source license is in LICENSE. Dependencies and models are
-downloaded separately during setup and remain subject to their own licenses.
-No model weights or third-party Python runtime are embedded in the setup ZIP.
+Local Dictation's source license is in LICENSE. The Windows installer bundles
+Python, dependencies, and pretrained model files, which remain subject to their
+own licenses. License texts are included in the installed `licenses` folder.
+The separate developer source ZIP does not contain runtime binaries or weights.
 
 - Python: https://www.python.org/psf/license/
 - Faster-Whisper: https://github.com/SYSTRAN/faster-whisper
@@ -11,6 +12,7 @@ No model weights or third-party Python runtime are embedded in the setup ZIP.
 - Converted English models: https://huggingface.co/Systran/faster-whisper-base.en
   and https://huggingface.co/Systran/faster-whisper-small.en
 - Sherpa-ONNX and punctuation model: https://github.com/k2-fsa/sherpa-onnx
+- Edge-Punct-Casing model (Apache 2.0): https://huggingface.co/frankyoujian/Edge-Punct-Casing
 - SoundDevice / PortAudio: https://python-sounddevice.readthedocs.io/
 - Pillow: https://python-pillow.github.io/
 - NumPy: https://numpy.org/

@@ -1,4 +1,4 @@
-LOCAL DICTATION / Windows setup bundle / 0.2.0
+LOCAL DICTATION / Developer source/setup bundle / 0.3.0
 
 1. Extract ALL files from the ZIP. Do not run the app inside the ZIP.
 2. Keep the extracted folder somewhere writable, such as Documents or G:\Apps.
