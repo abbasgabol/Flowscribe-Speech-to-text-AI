@@ -3,15 +3,15 @@ import ctypes
 from pathlib import Path
 import traceback
 import sys
-from app_paths import data_file
+from local_dictation.app_paths import data_file
 
-if __name__ == '__main__':
+def main():
     try:
         if '--self-test' in sys.argv:
-            from packaged_check import run
+            from local_dictation.packaged_check import run
             run(Path(sys.argv[sys.argv.index('--self-test') + 1]), sys.argv[-1])
         else:
-            from app import App
+            from local_dictation.app import App
             App().root.mainloop()
     except Exception:
         log = data_file('startup.log')
@@ -22,3 +22,7 @@ if __name__ == '__main__':
         ctypes.windll.user32.MessageBoxW(None,
             f'Local Dictation could not start. Repair the installation if setup is incomplete.\n\nDetails: {log}',
             'Local Dictation', 0x10)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,4 +1,5 @@
 """Integration check; no microphone recording or typing into other applications."""
+import _bootstrap  # Allow direct execution from any working directory.
 import json
 import ctypes
 from ctypes import wintypes
@@ -10,10 +11,10 @@ import sys
 os.environ['HF_HUB_OFFLINE'] = '1'
 import numpy as np
 import sounddevice as sd
-from app import App
-from win_input import foreground, insert_text, user32
-from speech_settings import DECODING
-from memory_stats import snapshot
+from local_dictation.app import App
+from local_dictation.win_input import foreground, insert_text, user32
+from local_dictation.speech_settings import DECODING
+from local_dictation.memory_stats import snapshot
 
 if __name__ == '__main__':
     app = App(model_name=sys.argv[1] if len(sys.argv) > 1 else None, persist_settings=False)
@@ -71,7 +72,7 @@ if __name__ == '__main__':
         segments, _ = app.model.transcribe(np.zeros(16000 * 3, dtype=np.float32), language='en', vad_filter=True)
         assert not ''.join(s.text for s in segments).strip(), 'Silence produced text'
         report['silence'] = 'passed'
-        sample = Path(__file__).parent / 'tests' / 'sample.wav'
+        sample = Path(__file__).resolve().parents[1] / 'tests' / 'sample.wav'
         if sample.exists():
             start = time.monotonic()
             segments, info = app.model.transcribe(str(sample), **DECODING)

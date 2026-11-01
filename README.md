@@ -1,134 +1,83 @@
-# Local Dictation — Windows beta 0.3.0
+# Local Dictation
 
-## Install the downloadable release
+Offline English speech-to-text for Windows. Hold **Win + Alt**, speak, and release
+to insert text into your active text field. Recognition and punctuation run on
+your CPU, with no account or paid API.
 
-Download `LocalDictation-Setup.exe` and open it. The wizard displays the MIT
-license, lets you choose the destination drive/folder, select models and desktop
-shortcuts, and launch the app afterward. Python, dependencies, and models are
-bundled: no separate runtime installation or setup-time internet is needed.
-Choose Lightweight for the smaller model or Complete to include Accuracy.
+![Desktop interface](website/dist/desktop-preview.png)
 
-The app and models live in your chosen destination. Small settings and explicitly
-saved corrections live in `%LOCALAPPDATA%\LocalDictation`, so installation in a
-protected folder does not prevent saving preferences. Uninstall through Windows
-Installed Apps. User preferences are deliberately preserved after removal.
+## Download
 
-The executable is unsigned. Windows may show an unknown-publisher warning; this
-release does not claim code-signing or a verified publisher identity.
+Get `LocalDictation-Setup.exe` from [GitHub Releases](https://github.com/abbasgabol/Flowscribe-Speech-to-text-AI/releases).
+The installer includes Python, dependencies, and models. Choose your destination
+drive, model components, and shortcuts. Once downloaded, setup works offline.
 
-The interface has **Dictate** and **Preferences** views. The transcript, recording
-button, and original-recognition viewer are in Dictate. Model choice, punctuation,
-insertion options, and the personal dictionary are in Preferences.
+- Windows 10/11 x64 and a microphone required.
+- Start with 8 GB RAM and 2 GB free storage; performance varies by PC.
+- Choose Lightweight for lower resource use, or Complete to add Accuracy.
+- This beta is unsigned; Windows may display an unknown-publisher warning.
 
-## Building releases
+## Features
 
-Install the versions in `packaging/build-requirements.txt` in the project venv,
-place Inno Setup 6 in `tools/InnoSetup`, and keep the verified model files under
-`models`. Run `build_installer.py` to create the frozen app and native installer.
-The script copies dependency licenses and requires the official model licenses
-under `packaging/licenses`. The build uses an explicit model-file list, excluding
-user preferences, dictionaries, audio, and model download caches.
+Hold-to-talk dictation, an editable preview, local punctuation, spacing repair,
+clock-phrase formatting, a personal dictionary, original-transcript inspection,
+model selection, memory monitoring, and system tray controls.
 
-`build_release.py` separately creates the developer source ZIP. It does not
-replace the installer metadata. Website downloads live in `website/dist/downloads`;
-`release.json` and `SHA256SUMS.txt` describe the installer, and `source-release.json`
-describes the optional source download.
+Recognition can be wrong. Review important text. Full grammar rewriting and
+automatic model training are not implemented.
 
-## Installer validation
+## Run from source
 
-The 0.3.0 installer was tested on the development Windows PC: welcome/license/
-location/components/shortcut pages were inspected; license acceptance was required;
-a Complete installation into a custom G: folder succeeded; the installed EXE loaded
-its GUI and keyboard hook and transcribed synthetic audio with punctuation using its
-bundled runtime. Automated source tests: 31 passed. A separate clean PC is not yet
-validated. The release is unsigned. See `qa` logs locally for detailed test output.
+Use Windows and Python 3.10 or 3.11 (64-bit). From the repository root:
 
-## Developer setup and behavior
+```powershell
+.\scripts\setup.bat
+.\run.bat
+```
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the system diagram, component-to-logic table,
-state transitions, resource choices, and validation boundaries.
+Setup downloads dependencies and the lightweight speech/punctuation models.
+Run `scripts\setup_accuracy.bat` to add the larger model. You can also launch with:
 
-Offline Windows English dictation with optional contextual punctuation and explicit
-saved phrase corrections. No API key or grammar rewriting. Requires Python 3.10 or later.
+```powershell
+.\.venv\Scripts\python.exe -m local_dictation
+```
 
-1. Run `setup.bat` with internet access to install dependencies and both local models.
-2. Open `run.bat`. Subsequent dictation runs offline.
-3. Click in a text field so its typing cursor is active. **Hold Win + Alt** and speak.
-4. Release either key to stop. Release both keys and keep that field active while transcription finishes.
+## Repository layout
 
-Choose **Accuracy — small.en** for the larger English recognition model or
-**Lightweight — base.en** for lower memory use and faster responses. The choice is saved
-locally. Only one speech model is loaded at a time; switch while the app is idle.
-On a fresh installation, run `setup_accuracy.bat` once to download the optional model
-(about 484 MB) into this project's `models/small.en` directory. Downloads can resume.
-When no preference exists, the app chooses Accuracy if its model is installed.
+```text
+local_dictation/   Runtime package: UI, recognition, input, text processing
+scripts/          Setup, downloads, benchmarks, builds, verification
+tests/           Automated tests
+assets/           Desktop icon
+docs/            Architecture, source guide, third-party notices
+packaging/        Windows installer, artwork, licenses, release notes
+website/          Static website and deployment configuration
+run.bat           Convenient Windows source launcher
+```
 
-Explicit clock phrases are formatted automatically: `half past eight` → `8:30`,
-`quarter past six` → `6:15`, `quarter to nine` → `8:45`. AM/PM is never guessed.
-This step works with either speech model and with punctuation refinement disabled.
-It cannot recover a time from unrelated misrecognized words such as `half car seat`;
-that requires better recognition of the original audio. Numeric times are protected
-from the punctuation model.
+Models, environments, build outputs, and personal settings are ignored by Git.
+The website stays at `website/dist` for the existing Vercel deployment. Large
+installers are release assets, not files committed to Git.
 
-The recording button transcribes into the preview for testing. Copy text copies the
-result manually. Automatic insertion preserves the clipboard. Esc cancels recording;
-recordings stop at two minutes. Closing the window hides it in the system tray.
-Use the tray menu to reopen it or quit.
+## Development
 
-Missing prose spaces such as `night?As`, `up?I`, and `up.So` are repaired independently
-of the punctuation-model checkbox. Automatic insertion adds a trailing space by default
-so consecutive dictations stay separated. Disable **Add a space after inserted dictation**
-when editing inside existing text. Existing spaces/newlines and recognized technical
-tokens (URLs, email addresses, decimals, code) are preserved. Ambiguous lowercase dotted
-identifiers are left unchanged. Existing text already in another app is not rewritten.
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests
+.\.venv\Scripts\python.exe scripts/verify.py base.en
+```
 
-**Improve punctuation** enables a small English punctuation model after recognition.
-Disable it to use Whisper's punctuation alone. **View original transcript** shows what
-Whisper recognized before saved corrections and refinement. Short sentences already
-ending with punctuation and technical strings are preserved; longer prose is refined.
-The small model can still miss boundaries or choose an unsuitable comma.
+Read [Contributing](CONTRIBUTING.md), [architecture and logic](docs/ARCHITECTURE.md),
+and [release publishing](packaging/PUBLISHING.md) for setup and build instructions.
 
-**Personal dictionary** lets you save and delete an exact misheard phrase and its desired
-replacement. Only entries you save are stored in `personal_dictionary.json`; there is no
-conversation history. Saved spellings are also short vocabulary hints for recognition.
-Up to 200 entries are supported. This is personalization, not model-weight training or RL.
-Use the checkbox to disable saved corrections for a recording.
+## Privacy and storage
 
-The live memory display distinguishes physical RAM from private committed memory
-(which Windows can keep in RAM or page out). It refreshes every three seconds.
+Audio stays in memory and is processed locally. Only corrections you explicitly
+save are remembered. Installed preferences live in `%LOCALAPPDATA%\LocalDictation`;
+source-mode preferences stay in the repository root. Models remain in the chosen
+installation folder or the repository's `models/` folder. Uninstalling preserves
+preferences; delete the data folder separately if desired.
 
-Audio is held only in memory. The last transcript stays visible until replaced or the
-app exits. No audio or transcript is uploaded. Setup downloads packages and model files;
-runtime loads the local model directory only.
+## License
 
-The CPU backend is faster-whisper, using INT8, beam size 5, and up to four threads.
-A short punctuated transcript example supplies decoding context. Matrix prepacking is
-disabled by default (`CT2_PACKED_GEMM=0`) after measuring a substantial reduction in
-private committed memory on this laptop. The punctuation model uses one CPU thread.
-The default Windows
-microphone is used. Change it in Windows sound settings before starting a recording.
-The shortcut uses a Windows keyboard hook to detect Win + Alt press and release.
-Either left or right key works. Release both keys before the next recording.
-Moving the mouse over a field does not focus it; click the intended field first.
-This prototype has no startup-at-login setting or installer yet.
-
-`requirements-lock.txt` records the tested Python dependencies used by setup.
-
-Punctuation, accuracy and latency depend on speech, microphone and hardware. Automatic
-list formatting and grammar cleanup are future work. Some custom editors and elevated
-apps may reject Unicode insertion; use Copy text there. If you change windows during
-processing, insertion is skipped. Moving the cursor within the same window is not detected.
-
-## Manual acceptance check
-
-Open Notepad, dictate a sentence and a question, and confirm punctuation and insertion.
-Test silent recording, Esc cancellation, and switching windows while processing.
-Disconnect internet and repeat. Confirm the tray menu reopens and quits the app.
-
-Developer checks: `.venv\Scripts\python.exe -m unittest discover -s tests -v`.
-`verify.py` checks model loading, the GUI, installed keyboard hook, insertion into its own
-test editor and silent audio with Hugging Face offline mode enabled. If
-`tests/sample.wav` exists, it also checks a spoken sentence and question.
-It also exercises the full refinement pipeline and the new dictionary/memory controls.
-`benchmark_memory.py` and `benchmark_decoding.py` record reproducible synthetic-speech
-experiments; their JSON reports are ignored by version control.
+[MIT](LICENSE). Dependencies and models retain their own licenses; see
+[third-party notices](docs/THIRD-PARTY-NOTICES.md) and `packaging/licenses`.

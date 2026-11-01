@@ -18,14 +18,14 @@ import pystray
 import sounddevice as sd
 from PIL import Image, ImageDraw
 from faster_whisper import WhisperModel
-from win_input import HOTKEY_LABEL, Hotkey, foreground, held, insert_text
-from memory_stats import snapshot
-from personalization import PersonalDictionary, apply_corrections, vocabulary_hint
-from punctuation import Punctuator
-from speech_settings import DECODING
-from text_spacing import normalize_spacing, prepare_insertion
-from time_formatting import format_times
-from app_paths import MODEL_ROOT, RESOURCE_DIR, data_file, FROZEN
+from local_dictation.win_input import HOTKEY_LABEL, Hotkey, foreground, held, insert_text
+from local_dictation.memory_stats import snapshot
+from local_dictation.personalization import PersonalDictionary, apply_corrections, vocabulary_hint
+from local_dictation.punctuation import Punctuator
+from local_dictation.speech_settings import DECODING
+from local_dictation.text_spacing import normalize_spacing, prepare_insertion
+from local_dictation.time_formatting import format_times
+from local_dictation.app_paths import MODEL_ROOT, RESOURCE_DIR, data_file, FROZEN
 
 MODEL_DIR = MODEL_ROOT / 'base.en'
 MODEL_CHOICES = {'Lightweight — base.en': 'base.en', 'Accuracy — small.en': 'small.en'}
@@ -75,7 +75,7 @@ class App:
         self.personalization_enabled = tk.BooleanVar(value=True)
         self.add_space = tk.BooleanVar(value=True)
         self.memory_label = tk.StringVar(value='Measuring memory...')
-        from desktop_ui import build
+        from local_dictation.desktop_ui import build
         build(self, MODEL_CHOICES)
         self.root.protocol('WM_DELETE_WINDOW', self.root.withdraw)
         self.hotkey = Hotkey(self.events)
@@ -173,7 +173,7 @@ class App:
         try:
             folder = MODEL_DIR.parent / self.current_model
             if not (folder / 'model.bin').exists():
-                raise RuntimeError('Model missing. Run the installer again to repair the installation.' if FROZEN else 'Model missing. Run setup.bat or setup_accuracy.bat with internet access.')
+                raise RuntimeError('Model missing. Run the installer again to repair the installation.' if FROZEN else 'Model missing. Run scripts/setup.bat or scripts/setup_accuracy.bat with internet access.')
             # Release the old model before allocating the new one.
             self.model = None
             gc.collect()
@@ -191,7 +191,7 @@ class App:
             return
         if not (MODEL_DIR.parent / selected / 'model.bin').exists():
             self.model_choice.set(next(label for label, name in MODEL_CHOICES.items() if name == self.current_model))
-            self.status.set('Run the installer again and select the Accuracy model.' if FROZEN else 'Accuracy model is not installed. Run setup_accuracy.bat once.')
+            self.status.set('Run the installer again and select the Accuracy model.' if FROZEN else 'Accuracy model is not installed. Run scripts/setup_accuracy.bat once.')
             return
         if selected == self.current_model and self.model is not None:
             return

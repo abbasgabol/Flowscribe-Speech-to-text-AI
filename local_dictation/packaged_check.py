@@ -1,10 +1,10 @@
 """Non-recording smoke test used by the release build to verify the frozen app."""
 import json
 import time
-from app_paths import APP_DIR, DATA_DIR
+from local_dictation.app_paths import APP_DIR, DATA_DIR
 
 def run(report_path, audio_path):
-    from app import App
+    from local_dictation.app import App
     app = App(model_name='base.en', persist_settings=False)
     app.root.withdraw()
     try:

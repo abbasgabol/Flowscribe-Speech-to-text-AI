@@ -1,5 +1,6 @@
 $ErrorActionPreference = 'Stop'
-Set-Location -LiteralPath $PSScriptRoot
+$projectRoot = Split-Path -Parent $PSScriptRoot
+Set-Location -LiteralPath $projectRoot
 Write-Host "`n  LOCAL DICTATION" -ForegroundColor Green
 Write-Host "  Your voice. Your computer.`n"
 Write-Host 'Keep this extracted folder in a permanent, writable location.'
@@ -8,7 +9,7 @@ Write-Host 'Dictation runs offline after setup. No account or API key required.'
 
 try {
     $pythonPath = $null
-    $runtimePython = Join-Path $PSScriptRoot 'runtime\python.exe'
+    $runtimePython = Join-Path $projectRoot 'runtime\python.exe'
     if (Test-Path -LiteralPath $runtimePython) { $pythonPath = $runtimePython }
     if (-not $pythonPath -and (Get-Command py.exe -ErrorAction SilentlyContinue)) {
         foreach ($version in @('-3.11', '-3.10')) {
@@ -21,13 +22,13 @@ try {
     }
     if (-not $pythonPath) {
         Write-Host "`nDownloading Python 3.11.9 from python.org..."
-        $installerPath = Join-Path $PSScriptRoot 'python-setup.exe'
+        $installerPath = Join-Path $projectRoot 'python-setup.exe'
         Invoke-WebRequest -UseBasicParsing -Uri 'https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe' -OutFile $installerPath
         $signature = Get-AuthenticodeSignature -LiteralPath $installerPath
         if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'Python Software Foundation') {
             throw 'Python installer signature verification failed. Setup stopped.'
         }
-        $runtimeDir = Join-Path $PSScriptRoot 'runtime'
+        $runtimeDir = Join-Path $projectRoot 'runtime'
         $arguments = @('/passive', 'InstallAllUsers=0', ('TargetDir="{0}"' -f $runtimeDir),
             'Include_launcher=0', 'InstallLauncherAllUsers=0', 'PrependPath=0', 'AssociateFiles=0',
             'Shortcuts=0', 'Include_test=0', 'Include_doc=0', 'Include_pip=1', 'Include_tcltk=1')
@@ -45,18 +46,18 @@ try {
     }
     & '.\.venv\Scripts\python.exe' -m pip install --disable-pip-version-check -r requirements-lock.txt
     if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed. Check your internet connection and retry.' }
-    foreach ($downloadScript in @('download_model.py', 'download_punctuation.py')) {
+    foreach ($downloadScript in @('scripts/download_model.py', 'scripts/download_punctuation.py')) {
         & '.\.venv\Scripts\python.exe' $downloadScript
         if ($LASTEXITCODE -ne 0) { throw "Model setup failed in $downloadScript. Run Setup again to retry." }
     }
     $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut((Join-Path ([Environment]::GetFolderPath('Desktop')) 'Local Dictation.lnk'))
-    $shortcut.TargetPath = Join-Path $PSScriptRoot '.venv\Scripts\pythonw.exe'
-    $shortcut.Arguments = ('"{0}"' -f (Join-Path $PSScriptRoot 'launch.py'))
-    $shortcut.WorkingDirectory = $PSScriptRoot
-    if (Test-Path 'app.ico') { $shortcut.IconLocation = Join-Path $PSScriptRoot 'app.ico' }
+    $shortcut.TargetPath = Join-Path $projectRoot '.venv\Scripts\pythonw.exe'
+    $shortcut.Arguments = '-m local_dictation'
+    $shortcut.WorkingDirectory = $projectRoot
+    if (Test-Path 'assets/app.ico') { $shortcut.IconLocation = Join-Path $projectRoot 'assets/app.ico' }
     $shortcut.Save()
     Write-Host "`nReady. Opening Local Dictation. Hold Win + Alt in a text field to speak." -ForegroundColor Green
-    Start-Process -FilePath (Join-Path $PSScriptRoot '.venv\Scripts\pythonw.exe') -ArgumentList ('"{0}"' -f (Join-Path $PSScriptRoot 'launch.py')) -WorkingDirectory $PSScriptRoot -WindowStyle Hidden
+    Start-Process -FilePath (Join-Path $projectRoot '.venv\Scripts\pythonw.exe') -ArgumentList '-m','local_dictation' -WorkingDirectory $projectRoot -WindowStyle Hidden
 } catch {
     Write-Host "`n$($_.Exception.Message)" -ForegroundColor Red
     exit 1

@@ -4,7 +4,7 @@ Static HTML, CSS, and JavaScript. No build tool or external font/image dependenc
 
 From the application root, build the release with:
 
-    .venv\Scripts\python.exe build_installer.py
+    .venv\Scripts\python.exe scripts/build_installer.py
 
 Preview with:
 

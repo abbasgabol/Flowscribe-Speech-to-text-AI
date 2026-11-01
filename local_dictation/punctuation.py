@@ -1,8 +1,8 @@
 """Small local punctuation model, preserving words and existing sentence endings."""
 from pathlib import Path
 import re
-from text_spacing import normalize_spacing
-from app_paths import MODEL_ROOT
+from local_dictation.text_spacing import normalize_spacing
+from local_dictation.app_paths import MODEL_ROOT
 
 MODEL_DIR = MODEL_ROOT / 'punctuation'
 WORDS = re.compile(r"\w+(?:['’\-]\w+)*", re.UNICODE)
@@ -15,7 +15,7 @@ class Punctuator:
         if self.engine is None:
             import sherpa_onnx as sherpa
             if not (MODEL_DIR / 'model.int8.onnx').is_file():
-                raise RuntimeError('Punctuation model missing. Run setup.bat to download it.')
+                raise RuntimeError('Punctuation model missing. Run scripts/setup.bat to download it.')
             self.engine = sherpa.OnlinePunctuation(sherpa.OnlinePunctuationConfig(
                 sherpa.OnlinePunctuationModelConfig(
                     cnn_bilstm=str(MODEL_DIR / 'model.int8.onnx'),

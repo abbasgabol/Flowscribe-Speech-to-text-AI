@@ -1,4 +1,5 @@
 """Build a standalone app then a native offline Windows setup wizard."""
+import _bootstrap  # Allow direct execution from any working directory.
 import hashlib
 import importlib.metadata as metadata
 import json
@@ -7,9 +8,9 @@ import shutil
 import subprocess
 import sys
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
 
-def build():
+def build(output_dir=None):
     # Model hash checks use the same pinned manifests as the original downloaders.
     from download_model import FILES, valid
     from download_accuracy_model import FILES as ACCURACY, valid as accuracy_valid
@@ -39,13 +40,14 @@ def build():
     python_license = Path(sys.base_prefix)/'LICENSE.txt'
     if python_license.is_file(): shutil.copy2(python_license, licenses/'Python-LICENSE.txt')
     command = [sys.executable, '-m', 'PyInstaller', '--noconfirm', '--onedir', '--windowed',
-        '--name', 'LocalDictation', '--icon', 'app.ico', '--add-data', 'app.ico;.',
+        '--name', 'LocalDictation', '--icon', 'assets/app.ico', '--add-data', 'assets/app.ico;.',
         '--collect-all', 'faster_whisper', '--collect-all', 'ctranslate2',
         '--collect-all', 'sherpa_onnx', '--collect-all', 'onnxruntime',
-        '--hidden-import', 'pystray._win32', 'launch.py']
+        '--hidden-import', 'pystray._win32', '--paths', str(ROOT), 'packaging/entrypoint.py']
     subprocess.run(command, cwd=ROOT, check=True)
-    subprocess.run([str(compiler), 'packaging/LocalDictation.iss'], cwd=ROOT, check=True)
-    destination = ROOT/'website/dist/downloads'
+    destination = Path(output_dir).resolve() if output_dir else ROOT/'website/dist/downloads'
+    destination.mkdir(parents=True, exist_ok=True)
+    subprocess.run([str(compiler), '/O' + str(destination), 'packaging/LocalDictation.iss'], cwd=ROOT, check=True)
     installer = destination/'LocalDictation-Setup.exe'
     digest = hashlib.sha256(installer.read_bytes()).hexdigest()
     release = {'version':'0.3.0', 'file':installer.name, 'bytes':installer.stat().st_size,
@@ -56,4 +58,7 @@ def build():
     print(json.dumps(release, indent=2))
 
 if __name__ == '__main__':
-    build()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output-dir")
+    build(parser.parse_args().output_dir)

@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
-from win_input import HoldChord
-from app import App
+from local_dictation.win_input import HoldChord
+from local_dictation.app import App
 
 
 class HoldTests(unittest.TestCase):

@@ -1,5 +1,5 @@
 import unittest
-from text_spacing import normalize_spacing, prepare_insertion
+from local_dictation.text_spacing import normalize_spacing, prepare_insertion
 
 class SpacingTests(unittest.TestCase):
     def test_reported_boundaries(self):

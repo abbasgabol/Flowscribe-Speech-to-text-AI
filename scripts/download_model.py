@@ -1,4 +1,5 @@
 """Download a pinned model and verify file integrity before activation."""
+import _bootstrap  # Allow direct execution from any working directory.
 import hashlib
 from pathlib import Path
 import shutil
@@ -22,7 +23,7 @@ def valid(path, expected):
     return digest.hexdigest() == expected
 
 if __name__ == '__main__':
-    folder = Path(__file__).parent / 'models' / 'base.en'
+    folder = Path(__file__).resolve().parents[1] / 'models' / 'base.en'
     folder.mkdir(parents=True, exist_ok=True)
     curl = shutil.which('curl.exe')
     for filename, expected in FILES.items():

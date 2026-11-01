@@ -1,4 +1,5 @@
 """Install the optional pinned small.en speech model."""
+import _bootstrap  # Allow direct execution from any working directory.
 import hashlib
 from pathlib import Path
 import shutil
@@ -24,7 +25,7 @@ def valid(path, kind, expected):
     return digest.hexdigest() == expected
 
 if __name__ == '__main__':
-    folder = Path(__file__).parent / 'models' / 'small.en'
+    folder = Path(__file__).resolve().parents[1] / 'models' / 'small.en'
     folder.mkdir(parents=True, exist_ok=True)
     for name, (kind, digest) in FILES.items():
         destination = folder / name

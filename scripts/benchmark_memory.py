@@ -1,10 +1,11 @@
 """Measure actual memory and punctuation overhead using generated test audio."""
+import _bootstrap  # Allow direct execution from any working directory.
 import json
 import os
 from pathlib import Path
 import time
 import sys
-from memory_stats import snapshot
+from local_dictation.memory_stats import snapshot
 
 os.environ['HF_HUB_OFFLINE'] = '1'
 report = {'start': snapshot()}
@@ -20,7 +21,7 @@ if sample.exists():
     report['transcript'] = ' '.join(s.text.strip() for s in segments)
     report['speech_seconds'] = round(time.perf_counter() - start, 3)
 report['after_transcription'] = snapshot()
-from punctuation import Punctuator
+from local_dictation.punctuation import Punctuator
 punctuator = Punctuator()
 punctuator.load()
 report['punctuation_loaded'] = snapshot()

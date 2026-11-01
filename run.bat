@@ -1,8 +1,8 @@
 @echo off
 cd /d "%~dp0"
 if not exist .venv\Scripts\pythonw.exe (
- echo Run setup.bat first.
+ echo Run scripts\setup.bat first.
  pause
  exit /b 1
 )
-start "" .venv\Scripts\pythonw.exe launch.py
+start "" .venv\Scripts\pythonw.exe -m local_dictation

@@ -1,4 +1,5 @@
 """Compare speech models on identical generated fixtures in separate processes."""
+import _bootstrap  # Allow direct execution from any working directory.
 import os
 os.environ['CT2_PACKED_GEMM'] = '0'
 os.environ['HF_HUB_OFFLINE'] = '1'
@@ -7,9 +8,9 @@ from pathlib import Path
 import sys
 import time
 from faster_whisper import WhisperModel
-from speech_settings import DECODING
-from time_formatting import format_times
-from memory_stats import snapshot
+from local_dictation.speech_settings import DECODING
+from local_dictation.time_formatting import format_times
+from local_dictation.memory_stats import snapshot
 
 name = sys.argv[1] if len(sys.argv) > 1 else 'base.en'
 start = time.perf_counter()

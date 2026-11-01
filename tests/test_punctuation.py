@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import Mock
-from punctuation import Punctuator
+from local_dictation.punctuation import Punctuator
 
 class PunctuationTests(unittest.TestCase):
     def setUp(self):

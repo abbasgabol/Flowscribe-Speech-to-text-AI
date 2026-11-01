@@ -1,5 +1,5 @@
 import unittest
-from time_formatting import format_times
+from local_dictation.time_formatting import format_times
 
 class ClockTests(unittest.TestCase):
     def test_requested_phrase(self):

@@ -2,7 +2,7 @@ LOCAL DICTATION / Developer source/setup bundle / 0.3.0
 
 1. Extract ALL files from the ZIP. Do not run the app inside the ZIP.
 2. Keep the extracted folder somewhere writable, such as Documents or G:\Apps.
-3. Double-click Setup.cmd. The first setup needs an internet connection.
+3. Double-click scripts/Setup.cmd. The first setup needs an internet connection.
 4. Setup installs dependencies, a lightweight English model and punctuation.
    If needed, it installs a signed Python runtime from python.org for your user.
 5. Open Local Dictation from your desktop shortcut. Click a text field in any
@@ -22,12 +22,12 @@ explicitly save and your model preference are stored in local JSON files.
 No transcripts, dictionaries or settings from the developer are in this bundle.
 
 OPTIONAL ACCURACY MODEL
-Run setup_accuracy.bat with internet access. Then choose Accuracy in Preferences.
+Run scripts/setup_accuracy.bat with internet access. Then choose Accuracy in Preferences.
 It uses more memory and may transcribe more slowly. It is not always more accurate.
 
 TROUBLESHOOTING
 Keep the extracted folder in place after setup; the shortcut points to it.
-Run Setup.cmd again if installation was interrupted. Microphone permission must
+Run scripts/Setup.cmd again if installation was interrupted. Microphone permission must
 be enabled in Windows Settings. If insertion is blocked, use Copy text.
 Closing the window hides it to the tray. Use Quit to exit fully.
 
@@ -37,5 +37,5 @@ If Setup installed Python, remove Python 3.11 through Windows Installed Apps
 before deleting its runtime folder. Do not remove a Python used by other apps.
 
 LICENSE
-See LICENSE and THIRD-PARTY-NOTICES.md. Third-party packages and model files
+See ../LICENSE and THIRD-PARTY-NOTICES.md. Third-party packages and model files
 have their own licenses. The project source is included for inspection.

@@ -2,7 +2,7 @@ import ctypes
 import unittest
 from unittest.mock import patch
 
-import win_input
+from local_dictation import win_input
 
 
 class InsertionTests(unittest.TestCase):

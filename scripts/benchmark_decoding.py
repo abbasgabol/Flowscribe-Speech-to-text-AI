@@ -1,3 +1,4 @@
+import _bootstrap  # Allow direct execution from any working directory.
 import os
 os.environ['CT2_PACKED_GEMM'] = '0'
 os.environ['HF_HUB_OFFLINE'] = '1'
@@ -5,7 +6,7 @@ import json
 from pathlib import Path
 import time
 from faster_whisper import WhisperModel
-from punctuation import Punctuator
+from local_dictation.punctuation import Punctuator
 
 model = WhisperModel('models/base.en', device='cpu', compute_type='int8', cpu_threads=4, local_files_only=True)
 punctuator = Punctuator()

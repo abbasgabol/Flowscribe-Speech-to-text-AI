@@ -1,7 +1,7 @@
 import tempfile
 from pathlib import Path
 import unittest
-from personalization import PersonalDictionary, apply_corrections, vocabulary_hint
+from local_dictation.personalization import PersonalDictionary, apply_corrections, vocabulary_hint
 
 class DictionaryTests(unittest.TestCase):
     def test_only_explicit_saves_create_files_and_persist(self):

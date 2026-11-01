@@ -1,11 +1,12 @@
 """Capture the actual interface with explicitly illustrative transcript content."""
+import _bootstrap  # Allow direct execution from any working directory.
 import time
 from pathlib import Path
 from PIL import ImageGrab
 from PIL import Image
 import ctypes
 from ctypes import wintypes
-from app import App
+from local_dictation.app import App
 
 app = App(model_name='base.en', persist_settings=False)
 try:
@@ -62,7 +63,7 @@ try:
             gdi.DeleteDC(memory)
             user32.ReleaseDC(handle, dc)
     assert image.convert('RGB').getbbox() is not None, 'Desktop screenshot is blank'
-    image.save(Path(__file__).parent / 'website' / 'dist' / 'desktop-preview.png')
+    image.save(Path(__file__).resolve().parents[1] / 'website' / 'dist' / 'desktop-preview.png')
     print('Desktop preview captured; local model loaded successfully.')
 finally:
     app.close()

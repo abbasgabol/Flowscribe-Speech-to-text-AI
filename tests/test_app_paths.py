@@ -9,7 +9,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 
 def load_paths():
-    spec = importlib.util.spec_from_file_location('isolated_app_paths', ROOT/'app_paths.py')
+    spec = importlib.util.spec_from_file_location('isolated_app_paths', ROOT/'local_dictation/app_paths.py')
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

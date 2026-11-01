@@ -1,7 +1,7 @@
 """Lightweight native desktop presentation; no web runtime or extra UI dependencies."""
 import tkinter as tk
 from tkinter import ttk
-from app_paths import FROZEN
+from local_dictation.app_paths import FROZEN
 
 BG = '#f5f4ef'
 INK = '#203c35'
@@ -104,7 +104,7 @@ def build(app, choices):
     app.model_selector = ttk.Combobox(settings, textvariable=app.model_choice, values=list(choices), state='disabled', width=34)
     app.model_selector.pack(anchor='w', pady=(6, 4))
     app.model_selector.bind('<<ComboboxSelected>>', app.switch_model)
-    model_help = 'Add Accuracy by running the installer again.' if FROZEN else 'Install the optional Accuracy model with setup_accuracy.bat.'
+    model_help = 'Add Accuracy by running the installer again.' if FROZEN else 'Install the optional Accuracy model with scripts/setup_accuracy.bat.'
     ttk.Label(settings, text='Lightweight uses less memory. Accuracy takes more time.\n' + model_help, style='Muted.TLabel').pack(anchor='w', pady=(0, 16))
     for label, variable in [('Insert at the cursor when using Win + Alt', app.insert),
                             ('Refine punctuation', app.punctuation_enabled),

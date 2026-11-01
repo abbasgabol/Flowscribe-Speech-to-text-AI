@@ -6,8 +6,8 @@ There is no application server, database, API key, or paid service in the dictat
 
 ## Desktop presentation and distribution
 
-`desktop_ui.py` owns the Tk/ttk visual theme and the Dictate/Preferences layout.
-`app.py` continues to own recording state, event processing, and inference. The
+`local_dictation/desktop_ui.py` owns the Tk/ttk visual theme and the Dictate/Preferences layout.
+`local_dictation/app.py` continues to own recording state, event processing, and inference. The
 visual redesign adds no browser runtime or new Python dependency. Windows DPI
 awareness and an explicit Tk scale keep the interface crisp and its layout stable.
 
@@ -16,20 +16,20 @@ Its example is scripted; it never records audio. Download anchors point to the
 versioned setup ZIP, and `release.json` supplies size/checksum metadata. The desktop
 app never needs the website after installation.
 
-`build_installer.py` packages Python and runtime dependencies with PyInstaller,
+`scripts/build_installer.py` packages Python and runtime dependencies with PyInstaller,
 then compiles `packaging/LocalDictation.iss` using Inno Setup. The installer embeds
 verified model files, offers destination/component/shortcut pages, and registers
 an uninstaller. No network is needed during installation or recognition.
 
-`app_paths.py` handles source and installed modes. Bundled assets come from the
+`local_dictation/app_paths.py` handles source and installed modes. Bundled assets come from the
 PyInstaller resource directory; models come from the executable's sibling models
 folder. Installed user data goes to `%LOCALAPPDATA%\LocalDictation`, separately
 from the app so permissions and upgrades do not prevent saving corrections. The
 uninstaller preserves user data. Source-mode paths retain their previous behavior.
 
-`build_release.py` still creates an optional developer source ZIP, with separate
+`scripts/build_release.py` still creates an optional developer source ZIP, with separate
 metadata so it cannot overwrite the installer release. Private runtime files are
-excluded from both distributions. `packaged_check.py` exercises the real bundled
+excluded from both distributions. `local_dictation/packaged_check.py` exercises the real bundled
 GUI, keyboard-hook registration, speech inference, and punctuation without using
 the microphone or inserting text into another app.
 
@@ -64,23 +64,23 @@ not word by word during speech. The microphone is closed before transcription st
 
 | Component / location | What it owns | Logic and reason |
 |---|---|---|
-| `launch.py`, `run.bat` | Startup | Launch the window without a console. Show startup errors and save their traceback in `startup.log`. |
-| `app.py`: `App` | UI and coordination | Keep widgets on the main Tk thread. Poll the event queue every 50 ms. |
-| `win_input.py`: `Hotkey`, `HoldChord` | Hold-to-talk shortcut | A keyboard hook queues `hold_start` when Win + Alt are held and `hold_end` on release. Repeats are ignored; release both keys to rearm. |
+| `local_dictation/launch.py`, `run.bat` | Startup | Launch the window without a console. Show startup errors and save their traceback in `startup.log`. |
+| `local_dictation/app.py`: `App` | UI and coordination | Keep widgets on the main Tk thread. Poll the event queue every 50 ms. |
+| `local_dictation/win_input.py`: `Hotkey`, `HoldChord` | Hold-to-talk shortcut | A keyboard hook queues `hold_start` when Win + Alt are held and `hold_end` on release. Repeats are ignored; release both keys to rearm. |
 | `App.toggle`, `App.audio` | Microphone capture | Read the default microphone as 16,000 mono float32 samples per second. Append short chunks to RAM; mark dropped audio for review. |
 | `App.stop`, `App.cancel` | Recording lifecycle | Stop closes the microphone and combines chunks. Escape discards the capture. A two-minute limit bounds recording memory. |
 | `App.load`, `App.switch_model` | Model lifecycle | Load either base.en or small.en locally using CPU INT8 and up to four threads. Release the old speech model before loading another. Save the selected model in app_settings.json. |
-| `App.transcribe`, `speech_settings.py` | Stage 1: recognition | Use faster-whisper with VAD, English, beam size 5, short punctuated transcript context, and independent utterances. Predict words and punctuation from audio. |
-| `personalization.py` | Explicit personalization | Store at most 200 user-saved phrase replacements. Supply bounded preferred-spelling hints to Whisper; apply whole-phrase replacements once. No passive history or training. |
-| `punctuation.py` | Stage 2: contextual punctuation | Run the 7.1 MiB INT8 Edge-Punct-Casing model using sherpa-onnx on one CPU thread. Predict punctuation from text context. Preserve words, names, short punctuated sentences and technical strings. |
-| `memory_stats.py` | Live resource visibility | Read the actual Python process's working set and private commit, plus available system RAM, every three seconds. |
-| `text_spacing.py` | Prose spacing and dictation boundaries | Repair missing spaces around clear sentence boundaries before and after refinement, preserving recognized technical tokens. Add an optional trailing space at insertion so successive dictations do not merge. |
-| `time_formatting.py` | Clock phrase formatting | Convert explicit half-past and quarter-past/to phrases to numeric times. Validate the hour, handle the 12-hour wraparound, preserve code, and never infer a time from a sound-alike. |
+| `App.transcribe`, `local_dictation/speech_settings.py` | Stage 1: recognition | Use faster-whisper with VAD, English, beam size 5, short punctuated transcript context, and independent utterances. Predict words and punctuation from audio. |
+| `local_dictation/personalization.py` | Explicit personalization | Store at most 200 user-saved phrase replacements. Supply bounded preferred-spelling hints to Whisper; apply whole-phrase replacements once. No passive history or training. |
+| `local_dictation/punctuation.py` | Stage 2: contextual punctuation | Run the 7.1 MiB INT8 Edge-Punct-Casing model using sherpa-onnx on one CPU thread. Predict punctuation from text context. Preserve words, names, short punctuated sentences and technical strings. |
+| `local_dictation/memory_stats.py` | Live resource visibility | Read the actual Python process's working set and private commit, plus available system RAM, every three seconds. |
+| `local_dictation/text_spacing.py` | Prose spacing and dictation boundaries | Repair missing spaces around clear sentence boundaries before and after refinement, preserving recognized technical tokens. Add an optional trailing space at insertion so successive dictations do not merge. |
+| `local_dictation/time_formatting.py` | Clock phrase formatting | Convert explicit half-past and quarter-past/to phrases to numeric times. Validate the hour, handle the 12-hour wraparound, preserve code, and never infer a time from a sound-alike. |
 | `App.poll` | Worker result handling | Display the transcript. Skip automatic insertion if audio was dropped. Update status and return to ready. |
 | `App.deliver`, `win_input.insert_text` | Text delivery | Check the original window is still foreground. Wait up to three seconds for modifier keys to be released. Send UTF-16 Unicode key events; leave the clipboard unchanged. |
 | `App.copy` | Compatibility fallback | Copy the visible transcript when the user clicks Copy text. This action intentionally replaces the clipboard. |
 | `pystray` | Background access | Keep Open and Quit available while the main window is hidden. Show a red marker while recording. |
-| `download_model.py`, `download_punctuation.py`, `setup.bat` | One-time installation | Install locked dependencies and model files over HTTPS. Verify SHA-256 before activation. Extract only the quantized punctuation model and vocabulary. |
+| `scripts/download_model.py`, `scripts/download_punctuation.py`, `scripts/setup.bat` | One-time installation | Install locked dependencies and model files over HTTPS. Verify SHA-256 before activation. Extract only the quantized punctuation model and vocabulary. |
 
 ## State and decision logic
 

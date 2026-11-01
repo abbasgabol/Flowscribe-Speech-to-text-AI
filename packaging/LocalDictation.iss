@@ -20,7 +20,7 @@ WizardImageFile=wizard.bmp
 WizardSmallImageFile=wizard-small.bmp
 WizardImageStretch=yes
 WizardSizePercent=110
-SetupIconFile=..\app.ico
+SetupIconFile=..\assets\app.ico
 UninstallDisplayIcon={app}\LocalDictation.exe
 OutputDir=..\website\dist\downloads
 OutputBaseFilename=LocalDictation-Setup
@@ -56,7 +56,7 @@ Source: "..\models\small.en\model.bin"; DestDir: "{app}\models\small.en"; Flags:
 Source: "..\models\small.en\tokenizer.json"; DestDir: "{app}\models\small.en"; Flags: ignoreversion; Components: accuracy
 Source: "..\models\small.en\vocabulary.txt"; DestDir: "{app}\models\small.en"; Flags: ignoreversion; Components: accuracy
 Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\THIRD-PARTY-NOTICES.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\docs\THIRD-PARTY-NOTICES.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "INSTALL-NOTES.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "licenses\*"; DestDir: "{app}\licenses"; Flags: ignoreversion recursesubdirs createallsubdirs
 
