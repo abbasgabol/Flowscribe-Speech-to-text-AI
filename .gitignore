@@ -17,3 +17,10 @@ qa/
 runtime/
 python-setup.exe
 site-release.tar.gz
+/build/
+/dist/
+tools/
+*.spec
+packaging/licenses/*/
+packaging/licenses/Python-LICENSE.txt
+website/dist/downloads/*.exe

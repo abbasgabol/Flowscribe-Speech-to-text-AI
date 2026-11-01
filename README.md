@@ -1,25 +1,47 @@
-# Local Dictation — Windows beta 0.2.0
+# Local Dictation — Windows beta 0.3.0
 
 ## Install the downloadable release
 
-Extract the entire setup ZIP to a permanent, writable folder, then run `Setup.cmd`.
-It installs dependencies and the lightweight speech and punctuation models, and
-creates a desktop shortcut. If needed, it downloads a signed Python 3.11 runtime
-from python.org. First setup requires internet; subsequent dictation is local.
-Read `START-HERE.txt` for requirements, privacy, and removal instructions.
+Download `LocalDictation-Setup.exe` and open it. The wizard displays the MIT
+license, lets you choose the destination drive/folder, select models and desktop
+shortcuts, and launch the app afterward. Python, dependencies, and models are
+bundled: no separate runtime installation or setup-time internet is needed.
+Choose Lightweight for the smaller model or Complete to include Accuracy.
 
-This is a source/setup ZIP, not a self-contained or signed EXE. The setup script
-has been syntax-checked and dependencies resolved for supported Python versions;
-installation on a separate clean Windows machine still needs validation.
+The app and models live in your chosen destination. Small settings and explicitly
+saved corrections live in `%LOCALAPPDATA%\LocalDictation`, so installation in a
+protected folder does not prevent saving preferences. Uninstall through Windows
+Installed Apps. User preferences are deliberately preserved after removal.
 
-The refreshed interface has **Dictate** and **Preferences** views. The transcript,
-recording button, and original-recognition viewer are in Dictate. Model choice,
-punctuation, insertion options, and the personal dictionary are in Preferences.
+The executable is unsigned. Windows may show an unknown-publisher warning; this
+release does not claim code-signing or a verified publisher identity.
 
-For development, `build_release.py` creates a clean, checksummed release ZIP in
-`website/dist/downloads`. It uses an explicit file allowlist, excluding user
-settings, personal dictionaries, models, audio, caches, and development environments.
-The static website in `website/dist` links directly to that release.
+The interface has **Dictate** and **Preferences** views. The transcript, recording
+button, and original-recognition viewer are in Dictate. Model choice, punctuation,
+insertion options, and the personal dictionary are in Preferences.
+
+## Building releases
+
+Install the versions in `packaging/build-requirements.txt` in the project venv,
+place Inno Setup 6 in `tools/InnoSetup`, and keep the verified model files under
+`models`. Run `build_installer.py` to create the frozen app and native installer.
+The script copies dependency licenses and requires the official model licenses
+under `packaging/licenses`. The build uses an explicit model-file list, excluding
+user preferences, dictionaries, audio, and model download caches.
+
+`build_release.py` separately creates the developer source ZIP. It does not
+replace the installer metadata. Website downloads live in `website/dist/downloads`;
+`release.json` and `SHA256SUMS.txt` describe the installer, and `source-release.json`
+describes the optional source download.
+
+## Installer validation
+
+The 0.3.0 installer was tested on the development Windows PC: welcome/license/
+location/components/shortcut pages were inspected; license acceptance was required;
+a Complete installation into a custom G: folder succeeded; the installed EXE loaded
+its GUI and keyboard hook and transcribed synthetic audio with punctuation using its
+bundled runtime. Automated source tests: 31 passed. A separate clean PC is not yet
+validated. The release is unsigned. See `qa` logs locally for detailed test output.
 
 ## Developer setup and behavior
 

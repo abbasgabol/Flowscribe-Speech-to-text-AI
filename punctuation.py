@@ -2,8 +2,9 @@
 from pathlib import Path
 import re
 from text_spacing import normalize_spacing
+from app_paths import MODEL_ROOT
 
-MODEL_DIR = Path(__file__).parent / 'models' / 'punctuation'
+MODEL_DIR = MODEL_ROOT / 'punctuation'
 WORDS = re.compile(r"\w+(?:['’\-]\w+)*", re.UNICODE)
 
 class Punctuator:

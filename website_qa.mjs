@@ -47,7 +47,7 @@ try {
   await sleep(2200);
   const demo = await evaluate(`({text:document.getElementById('example-result').textContent, disabled:document.getElementById('demo-button').disabled})`);
   if (!demo.text.includes('8:30') || demo.disabled) throw new Error('Demo did not finish');
-  const download = await evaluate(`(async()=>{const r=await fetch(document.querySelector('a[download]').href); const b=new Uint8Array(await r.arrayBuffer());return {status:r.status,bytes:b.length,zip:b[0]===80&&b[1]===75}})()`);
-  if(download.status!==200 || !download.zip) throw new Error('Broken download');
+  const download = await evaluate(`(async()=>{const url=document.querySelector('a[download]').href; const r=await fetch(url,{method:'HEAD'});const release=await (await fetch('downloads/release.json')).json();return {status:r.status,bytes:Number(r.headers.get('content-length')),expected:release.bytes,exe:url.endsWith('/LocalDictation-Setup.exe')}})()`);
+  if(download.status!==200 || !download.exe || download.bytes!==download.expected) throw new Error('Broken download');
   console.log(JSON.stringify({layouts:report,demo,download},null,2));
 } finally { ws.close(); }

@@ -1,0 +1,35 @@
+LOCAL DICTATION 0.3.0
+Your voice. Your computer.
+
+This installer includes the app, its Python runtime, and local speech models.
+No separate Python installation, account, API key, or setup download is needed.
+
+Choose your installation location on the next pages. You may select C:, G:, or
+another writable drive. The program and models are installed in that location.
+
+Lightweight includes the smaller English model and punctuation refinement.
+Complete also installs the larger Accuracy model. Both run on your CPU.
+An 8 GB Windows 10/11 x64 PC is the recommended starting point. Speed varies.
+
+HOW TO USE
+Click in a text field, hold Win + Alt, speak, and release to insert the text.
+The button inside the app records into its preview instead. Esc cancels recording.
+Closing the window hides it to the tray. Choose Quit to exit fully.
+
+PRIVACY AND STORAGE
+Audio is processed locally in memory, not saved or sent to a server.
+Only explicitly saved corrections and your model preference are remembered.
+These small files are stored separately in %LOCALAPPDATA%\LocalDictation.
+They remain after uninstall so reinstalling does not erase your preferences.
+Delete that folder yourself if you also want to remove your saved corrections.
+
+Recognition and punctuation can be wrong. Review important text before using it.
+No automatic grammar rewriting or conversation-history learning is included.
+
+UNINSTALL
+Use Windows Settings > Apps > Installed apps > Local Dictation > Uninstall.
+The uninstaller removes installed application files, models, and shortcuts.
+User preferences are preserved as described above.
+
+The MIT license is shown on the license page. Third-party components retain
+their own licenses, included in the installed licenses folder.
