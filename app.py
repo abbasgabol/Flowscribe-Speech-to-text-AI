@@ -1,5 +1,7 @@
 """Offline English dictation for Windows. Audio is held only in memory."""
 import os
+import gc
+import json
 # Reduce CPU memory prepacking overhead; measured on the target i5 laptop.
 os.environ.setdefault('CT2_PACKED_GEMM', '0')
 from pathlib import Path
@@ -22,18 +24,35 @@ from personalization import PersonalDictionary, apply_corrections, vocabulary_hi
 from punctuation import Punctuator
 from speech_settings import DECODING
 from text_spacing import normalize_spacing, prepare_insertion
+from time_formatting import format_times
 
 MODEL_DIR = Path(__file__).parent / 'models' / 'base.en'
+MODEL_CHOICES = {'Lightweight — base.en': 'base.en', 'Accuracy — small.en': 'small.en'}
+SETTINGS_PATH = Path(__file__).parent / 'app_settings.json'
 RATE = 16000
 
 class App:
-    def __init__(self):
+    def __init__(self, model_name=None, persist_settings=True):
+        import ctypes
+        ctypes.windll.user32.SetProcessDPIAware()
         self.root = tk.Tk()
+        self.root.tk.call('tk', 'scaling', 96 / 72)
         self.root.title('Local Dictation')
-        self.root.geometry('680x590')
-        self.root.minsize(620, 530)
+        icon_path = Path(__file__).parent / 'app.ico'
+        if icon_path.is_file():
+            self.root.iconbitmap(str(icon_path))
+        self.root.geometry('680x640')
+        self.root.minsize(620, 600)
         self.events = queue.Queue()
         self.model = None
+        default_model = 'small.en' if (MODEL_DIR.parent / 'small.en' / 'model.bin').exists() else 'base.en'
+        try:
+            saved_model = json.loads(SETTINGS_PATH.read_text(encoding='utf-8')).get('model', default_model)
+        except (OSError, ValueError, AttributeError):
+            saved_model = default_model
+        self.current_model = model_name or (saved_model if saved_model in MODEL_CHOICES.values() else default_model)
+        self.loading = True
+        self.persist_settings = persist_settings
         self.stream = None
         self.hold_recording = False
         self.frames = []
@@ -55,29 +74,8 @@ class App:
         self.personalization_enabled = tk.BooleanVar(value=True)
         self.add_space = tk.BooleanVar(value=True)
         self.memory_label = tk.StringVar(value='Measuring memory...')
-        ttk.Label(self.root, text='Local Dictation', font=('Segoe UI', 22)).pack(pady=16)
-        ttk.Label(self.root, text=f'Hold {HOTKEY_LABEL} to talk; release to finish   |   Esc: cancel').pack()
-        ttk.Label(self.root, textvariable=self.status, wraplength=560).pack(pady=12)
-        self.button = ttk.Button(self.root, text='Start recording', command=lambda: self.toggle(None))
-        self.button.pack()
-        ttk.Checkbutton(self.root, text='Insert text into the active app when using the shortcut', variable=self.insert).pack(pady=10)
-        options = ttk.Frame(self.root)
-        options.pack(pady=3)
-        ttk.Checkbutton(options, text='Improve punctuation', variable=self.punctuation_enabled).pack(side='left', padx=8)
-        ttk.Checkbutton(options, text='Use saved corrections', variable=self.personalization_enabled).pack(side='left', padx=8)
-        ttk.Checkbutton(self.root, text='Add a space after inserted dictation', variable=self.add_space).pack(pady=2)
-        self.output = tk.Text(self.root, height=8, wrap='word', font=('Segoe UI', 11))
-        self.output.pack(fill='both', expand=True, padx=16)
-        bar = ttk.Frame(self.root)
-        bar.pack(pady=12)
-        ttk.Button(bar, text='Copy text', command=self.copy).pack(side='left', padx=5)
-        ttk.Button(bar, text='Hide to tray', command=self.root.withdraw).pack(side='left', padx=5)
-        ttk.Button(bar, text='Quit', command=self.close).pack(side='left', padx=5)
-        extra = ttk.Frame(self.root)
-        extra.pack(pady=4)
-        ttk.Button(extra, text='Personal dictionary', command=self.open_dictionary).pack(side='left', padx=5)
-        ttk.Button(extra, text='View original transcript', command=self.show_original).pack(side='left', padx=5)
-        ttk.Label(self.root, textvariable=self.memory_label, wraplength=640).pack(pady=8)
+        from desktop_ui import build
+        build(self, MODEL_CHOICES)
         self.root.protocol('WM_DELETE_WINDOW', self.root.withdraw)
         self.hotkey = Hotkey(self.events)
         icon = Image.new('RGB', (64, 64), '#173c42')
@@ -110,7 +108,9 @@ class App:
     def show_original(self):
         dialog = tk.Toplevel(self.root)
         dialog.title('Original recognition — before punctuation and saved corrections')
-        field = tk.Text(dialog, width=75, height=12, wrap='word')
+        dialog.configure(bg='#f5f4ef')
+        field = tk.Text(dialog, width=75, height=12, wrap='word', font=('Segoe UI', 12),
+                        relief='flat', padx=18, pady=18, bg='white', fg='#203c35')
         field.pack(fill='both', expand=True, padx=12, pady=12)
         field.insert('1.0', self.last_raw or 'No transcript yet.')
         field.configure(state='disabled')
@@ -121,6 +121,7 @@ class App:
             return
         dialog = tk.Toplevel(self.root)
         dialog.title('Personal dictionary — only corrections you save')
+        dialog.configure(bg='#f5f4ef')
         dialog.geometry('660x450')
         ttk.Label(dialog, text='Save a recurring misheard word or phrase. It will be replaced wherever it occurs.\n'
                   'Your preferred spelling is also a vocabulary hint. No conversations are saved.', wraplength=630).pack(pady=10)
@@ -169,13 +170,35 @@ class App:
 
     def load(self):
         try:
-            if not (MODEL_DIR / 'model.bin').exists():
-                raise RuntimeError('Model missing. Run setup.bat once with internet access.')
-            self.model = WhisperModel(str(MODEL_DIR), device='cpu', compute_type='int8',
+            folder = MODEL_DIR.parent / self.current_model
+            if not (folder / 'model.bin').exists():
+                raise RuntimeError('Model missing. Run setup.bat or setup_accuracy.bat with internet access.')
+            # Release the old model before allocating the new one.
+            self.model = None
+            gc.collect()
+            self.model = WhisperModel(str(folder), device='cpu', compute_type='int8',
                                       cpu_threads=min(4, os.cpu_count() or 2), local_files_only=True)
             self.events.put(('ready', None))
         except Exception as exc:
             self.events.put(('error', str(exc)))
+
+    def switch_model(self, _=None):
+        selected = MODEL_CHOICES[self.model_choice.get()]
+        if self.loading or self.stream is not None or (self.busy and self.model is not None):
+            self.model_choice.set(next(label for label, name in MODEL_CHOICES.items() if name == self.current_model))
+            self.status.set('Finish the current recording or transcription before changing models.')
+            return
+        if not (MODEL_DIR.parent / selected / 'model.bin').exists():
+            self.model_choice.set(next(label for label, name in MODEL_CHOICES.items() if name == self.current_model))
+            self.status.set('Accuracy model is not installed. Run setup_accuracy.bat once.')
+            return
+        if selected == self.current_model and self.model is not None:
+            return
+        self.current_model = selected
+        self.loading = self.busy = True
+        self.model_selector.configure(state='disabled')
+        self.status.set(f'Loading {selected} locally...')
+        threading.Thread(target=self.load, daemon=True).start()
 
     def toggle(self, target):
         if self.busy:
@@ -243,7 +266,7 @@ class App:
             segments, _ = self.model.transcribe(samples, **DECODING,
                                                 hotwords=vocabulary_hint(entries or {}) or None)
             raw = ' '.join(s.text.strip() for s in segments).strip()
-            text, notice = normalize_spacing(apply_corrections(raw, entries or {})), ''
+            text, notice = normalize_spacing(format_times(apply_corrections(raw, entries or {}))), ''
             if improve_punctuation and text:
                 try:
                     text = self.punctuator.restore(text)
@@ -295,9 +318,20 @@ class App:
                     self.status.set(value)
                 elif kind == 'ready':
                     self.busy = False
+                    self.loading = False
+                    self.model_selector.configure(state='readonly')
+                    try:
+                        if self.persist_settings:
+                            temporary = SETTINGS_PATH.with_suffix('.tmp')
+                            temporary.write_text(json.dumps({'model': self.current_model}), encoding='utf-8')
+                            temporary.replace(SETTINGS_PATH)
+                    except OSError:
+                        pass  # A read-only installation can still dictate.
                     self.status.set(self.hotkey_error or self.dictionary_error or 'Ready. Hold Win + Alt to speak. Punctuation and saved corrections run locally.')
                 elif kind == 'error':
                     self.busy = self.model is None
+                    self.loading = False
+                    self.model_selector.configure(state='readonly')
                     self.status.set(f'Error: {value}')
                     self.root.deiconify()
                     self.tray.title = 'Local Dictation — Error'

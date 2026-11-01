@@ -4,6 +4,25 @@ This is a single Windows desktop process. It has a small window and tray icon, a
 global keyboard shortcut, microphone capture, and a local English speech model.
 There is no application server, database, API key, or paid service in the dictation path.
 
+## Desktop presentation and distribution
+
+`desktop_ui.py` owns the Tk/ttk visual theme and the Dictate/Preferences layout.
+`app.py` continues to own recording state, event processing, and inference. The
+visual redesign adds no browser runtime or new Python dependency. Windows DPI
+awareness and an explicit Tk scale keep the interface crisp and its layout stable.
+
+The marketing website is independent static HTML/CSS/JavaScript in `website/dist`.
+Its example is scripted; it never records audio. Download anchors point to the
+versioned setup ZIP, and `release.json` supplies size/checksum metadata. The desktop
+app never needs the website after installation.
+
+`build_release.py` produces a deterministic ZIP from an explicit allowlist. Private
+runtime files are excluded. `Setup.cmd` runs `Install.ps1`, which reuses a supported
+64-bit Python or obtains a signed Python installer, creates a virtual environment,
+installs pinned packages, verifies model downloads, and creates a desktop shortcut.
+Initial installation uses the internet; recognition remains fully local afterward.
+This is a source/setup distribution. It is not a signed standalone executable.
+
 ## Data flow
 
 ```mermaid
@@ -13,12 +32,13 @@ flowchart LR
     M[Default microphone] --> A[16 kHz mono audio in RAM]
     C -->|Start or stop| A
     A -->|Stop recording| V[Voice activity detection]
-    V --> W[Whisper base.en on CPU]
+    V --> W[Selected Whisper model on CPU]
     W --> T[Original transcript]
     D[Explicit saved corrections] -->|Vocabulary hints| W
     T --> R[Apply saved phrase replacements]
     D --> R
-    R --> E[Optional contextual punctuation model]
+    R --> N[Format explicit clock phrases]
+    N --> E[Optional contextual punctuation model]
     T --> O[Original transcript viewer]
     E --> P[Refined preview]
     E --> G{Original window still active?}
@@ -39,12 +59,13 @@ not word by word during speech. The microphone is closed before transcription st
 | `win_input.py`: `Hotkey`, `HoldChord` | Hold-to-talk shortcut | A keyboard hook queues `hold_start` when Win + Alt are held and `hold_end` on release. Repeats are ignored; release both keys to rearm. |
 | `App.toggle`, `App.audio` | Microphone capture | Read the default microphone as 16,000 mono float32 samples per second. Append short chunks to RAM; mark dropped audio for review. |
 | `App.stop`, `App.cancel` | Recording lifecycle | Stop closes the microphone and combines chunks. Escape discards the capture. A two-minute limit bounds recording memory. |
-| `App.load` | Model lifecycle | Load `models/base.en` once, locally, using CPU INT8 and up to four threads. Keep it loaded to avoid reloading on every utterance. |
+| `App.load`, `App.switch_model` | Model lifecycle | Load either base.en or small.en locally using CPU INT8 and up to four threads. Release the old speech model before loading another. Save the selected model in app_settings.json. |
 | `App.transcribe`, `speech_settings.py` | Stage 1: recognition | Use faster-whisper with VAD, English, beam size 5, short punctuated transcript context, and independent utterances. Predict words and punctuation from audio. |
 | `personalization.py` | Explicit personalization | Store at most 200 user-saved phrase replacements. Supply bounded preferred-spelling hints to Whisper; apply whole-phrase replacements once. No passive history or training. |
 | `punctuation.py` | Stage 2: contextual punctuation | Run the 7.1 MiB INT8 Edge-Punct-Casing model using sherpa-onnx on one CPU thread. Predict punctuation from text context. Preserve words, names, short punctuated sentences and technical strings. |
 | `memory_stats.py` | Live resource visibility | Read the actual Python process's working set and private commit, plus available system RAM, every three seconds. |
 | `text_spacing.py` | Prose spacing and dictation boundaries | Repair missing spaces around clear sentence boundaries before and after refinement, preserving recognized technical tokens. Add an optional trailing space at insertion so successive dictations do not merge. |
+| `time_formatting.py` | Clock phrase formatting | Convert explicit half-past and quarter-past/to phrases to numeric times. Validate the hour, handle the 12-hour wraparound, preserve code, and never infer a time from a sound-alike. |
 | `App.poll` | Worker result handling | Display the transcript. Skip automatic insertion if audio was dropped. Update status and return to ready. |
 | `App.deliver`, `win_input.insert_text` | Text delivery | Check the original window is still foreground. Wait up to three seconds for modifier keys to be released. Send UTF-16 Unicode key events; leave the clipboard unchanged. |
 | `App.copy` | Compatibility fallback | Copy the visible transcript when the user clicks Copy text. This action intentionally replaces the clipboard. |
@@ -105,7 +126,7 @@ in this version, which limits CPU and memory competition.
 
 ## Model, punctuation, and resources
 
-Whisper base.en is the English speech model. Faster-whisper is the execution engine
+Whisper base.en and optional small.en are the English speech models. Faster-whisper is the execution engine
 that runs it through CTranslate2. INT8 means the engine uses reduced-precision arithmetic
 to reduce inference cost. No dedicated graphics card is required by this configuration.
 
@@ -148,11 +169,28 @@ optimization for lower memory here. Single-sample timings varied; they do not es
 a general speed improvement. There is no smaller speech model or accuracy-reducing
 quantization change in this adjustment.
 
+### Optional accuracy model measurements
+
+The next-size English model is now available as Accuracy mode. On the same generated
+5.02-second train sentence, base.en took 1.39 seconds and small.en took 2.92 seconds.
+Both recognized "half past eight" correctly; the explicit time-formatting stage produced
+"8:30". This clean synthetic fixture did not reproduce the user's recognition error,
+so it does not establish that the original recording is fixed.
+
+After three generated speech samples, the isolated small.en process used about 346 MiB
+resident RAM and 663 MiB private commit, with a 686 MiB peak resident set during loading.
+Base.en used about 173 MiB resident and 462 MiB committed in the comparable test.
+The desktop UI and punctuation model add overhead. Timings vary with other applications.
+Only one speech model is retained; switching frees the previous model first, although
+the runtime may retain some reusable allocation buffers.
+
 ## Storage and privacy
 
 | Data | Location and lifetime |
 |---|---|
 | Model and tokenizer | `models/base.en`, persistent local files |
+| Optional accuracy model | `models/small.en`, persistent local files, about 484 MB for weights |
+| Selected speech model | `app_settings.json`, preference only, no transcripts |
 | Punctuation model | `models/punctuation`, persistent local files |
 | Explicit corrections | `personal_dictionary.json`, created only on a user save; editable/deletable in the app |
 | Python libraries | `.venv`, persistent local files |

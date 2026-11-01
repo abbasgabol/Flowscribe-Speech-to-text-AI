@@ -1,0 +1,41 @@
+LOCAL DICTATION / Windows setup bundle / 0.2.0
+
+1. Extract ALL files from the ZIP. Do not run the app inside the ZIP.
+2. Keep the extracted folder somewhere writable, such as Documents or G:\Apps.
+3. Double-click Setup.cmd. The first setup needs an internet connection.
+4. Setup installs dependencies, a lightweight English model and punctuation.
+   If needed, it installs a signed Python runtime from python.org for your user.
+5. Open Local Dictation from your desktop shortcut. Click a text field in any
+   ordinary Windows application. Hold Win + Alt, speak, then release the keys.
+
+The download is a source/setup bundle, not a standalone EXE or signed installer.
+Python and models are downloaded during setup, not included in this ZIP.
+Allow several minutes and at least 2 GB of free space for initial setup.
+Use a 64-bit Windows 10/11 PC. 8 GB RAM is the recommended starting point.
+The current build was tested on Windows with an Intel i5 and 8 GB RAM.
+Other computers may behave differently; this is an early release.
+
+PRIVACY
+Speech is processed locally. Audio is held in memory and not saved to disk.
+The last transcript stays visible while the app is open. Only corrections you
+explicitly save and your model preference are stored in local JSON files.
+No transcripts, dictionaries or settings from the developer are in this bundle.
+
+OPTIONAL ACCURACY MODEL
+Run setup_accuracy.bat with internet access. Then choose Accuracy in Preferences.
+It uses more memory and may transcribe more slowly. It is not always more accurate.
+
+TROUBLESHOOTING
+Keep the extracted folder in place after setup; the shortcut points to it.
+Run Setup.cmd again if installation was interrupted. Microphone permission must
+be enabled in Windows Settings. If insertion is blocked, use Copy text.
+Closing the window hides it to the tray. Use Quit to exit fully.
+
+UNINSTALL
+Quit the app. Delete the desktop shortcut and the extracted folder.
+If Setup installed Python, remove Python 3.11 through Windows Installed Apps
+before deleting its runtime folder. Do not remove a Python used by other apps.
+
+LICENSE
+See LICENSE and THIRD-PARTY-NOTICES.md. Third-party packages and model files
+have their own licenses. The project source is included for inspection.

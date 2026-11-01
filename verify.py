@@ -5,6 +5,7 @@ from ctypes import wintypes
 import os
 from pathlib import Path
 import time
+import sys
 
 os.environ['HF_HUB_OFFLINE'] = '1'
 import numpy as np
@@ -15,7 +16,7 @@ from speech_settings import DECODING
 from memory_stats import snapshot
 
 if __name__ == '__main__':
-    app = App()
+    app = App(model_name=sys.argv[1] if len(sys.argv) > 1 else None, persist_settings=False)
     app.root.withdraw()
     report = {}
     try:
@@ -28,6 +29,7 @@ if __name__ == '__main__':
         assert app.model is not None and not app.busy, 'Model did not become ready'
         assert not app.hotkey_error, app.hotkey_error
         report['gui_and_hotkey'] = 'passed'
+        report['speech_model'] = app.current_model
         app.refresh_memory()
         assert 'App RAM:' in app.memory_label.get()
         app.open_dictionary()
@@ -92,7 +94,32 @@ if __name__ == '__main__':
         refined = app.punctuator.restore(example)
         assert 'Hey, John,' in refined and "I'll do it myself." in refined, refined
         report['context_punctuation'] = refined
+        time_sample = Path('tests/sample-time.wav')
+        if time_sample.exists():
+            app.last_raw = ''
+            app.transcribe(str(time_sample), None, False, True, {})
+            deadline = time.monotonic() + 5
+            while not app.last_raw and time.monotonic() < deadline:
+                app.root.update()
+                time.sleep(.05)
+            final = app.output.get('1.0', 'end-1c')
+            assert '8:30' in final, final
+            report['clock_phrase_pipeline'] = final
         report['memory_after_pipeline'] = snapshot()
+        if (Path('models/small.en/model.bin')).exists():
+            original_model = app.current_model
+            alternate = 'base.en' if original_model == 'small.en' else 'small.en'
+            for name in (alternate, original_model):
+                app.model_choice.set('Accuracy — small.en' if name == 'small.en' else 'Lightweight — base.en')
+                app.switch_model()
+                deadline = time.monotonic() + 90
+                while app.busy and time.monotonic() < deadline:
+                    app.root.update()
+                    if app.status.get().startswith('Error:'):
+                        raise RuntimeError(app.status.get())
+                    time.sleep(.05)
+                assert app.current_model == name and app.model is not None and not app.busy
+            report['model_switch_roundtrip'] = 'passed'
         print(json.dumps(report, indent=2), flush=True)
         Path('validation.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
     finally:

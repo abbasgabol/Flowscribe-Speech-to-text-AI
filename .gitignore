@@ -9,3 +9,11 @@ personal_dictionary.tmp
 memory-report.json
 memory-report-*.json
 decoding-report.json
+accuracy-report*.json
+app_settings.json
+app_settings.tmp
+.qa-edge/
+qa/
+runtime/
+python-setup.exe
+site-release.tar.gz

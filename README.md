@@ -1,4 +1,27 @@
-# Local Dictation — first prototype
+# Local Dictation — Windows beta 0.2.0
+
+## Install the downloadable release
+
+Extract the entire setup ZIP to a permanent, writable folder, then run `Setup.cmd`.
+It installs dependencies and the lightweight speech and punctuation models, and
+creates a desktop shortcut. If needed, it downloads a signed Python 3.11 runtime
+from python.org. First setup requires internet; subsequent dictation is local.
+Read `START-HERE.txt` for requirements, privacy, and removal instructions.
+
+This is a source/setup ZIP, not a self-contained or signed EXE. The setup script
+has been syntax-checked and dependencies resolved for supported Python versions;
+installation on a separate clean Windows machine still needs validation.
+
+The refreshed interface has **Dictate** and **Preferences** views. The transcript,
+recording button, and original-recognition viewer are in Dictate. Model choice,
+punctuation, insertion options, and the personal dictionary are in Preferences.
+
+For development, `build_release.py` creates a clean, checksummed release ZIP in
+`website/dist/downloads`. It uses an explicit file allowlist, excluding user
+settings, personal dictionaries, models, audio, caches, and development environments.
+The static website in `website/dist` links directly to that release.
+
+## Developer setup and behavior
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the system diagram, component-to-logic table,
 state transitions, resource choices, and validation boundaries.
@@ -10,6 +33,20 @@ saved phrase corrections. No API key or grammar rewriting. Requires Python 3.10 
 2. Open `run.bat`. Subsequent dictation runs offline.
 3. Click in a text field so its typing cursor is active. **Hold Win + Alt** and speak.
 4. Release either key to stop. Release both keys and keep that field active while transcription finishes.
+
+Choose **Accuracy — small.en** for the larger English recognition model or
+**Lightweight — base.en** for lower memory use and faster responses. The choice is saved
+locally. Only one speech model is loaded at a time; switch while the app is idle.
+On a fresh installation, run `setup_accuracy.bat` once to download the optional model
+(about 484 MB) into this project's `models/small.en` directory. Downloads can resume.
+When no preference exists, the app chooses Accuracy if its model is installed.
+
+Explicit clock phrases are formatted automatically: `half past eight` → `8:30`,
+`quarter past six` → `6:15`, `quarter to nine` → `8:45`. AM/PM is never guessed.
+This step works with either speech model and with punctuation refinement disabled.
+It cannot recover a time from unrelated misrecognized words such as `half car seat`;
+that requires better recognition of the original audio. Numeric times are protected
+from the punctuation model.
 
 The recording button transcribes into the preview for testing. Copy text copies the
 result manually. Automatic insertion preserves the clipboard. Esc cancels recording;

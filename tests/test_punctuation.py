@@ -13,7 +13,7 @@ class PunctuationTests(unittest.TestCase):
         self.p.engine.add_punctuation_with_case.assert_not_called()
 
     def test_technical_strings_are_preserved(self):
-        for text in ['email test@example.com', 'visit https://example.com', 'cost 3.14', 'file_name']:
+        for text in ['email test@example.com', 'visit https://example.com', 'cost 3.14', 'file_name', 'Arrive at 8:30.']:
             self.assertEqual(self.p.restore(text), text)
         self.p.engine.add_punctuation_with_case.assert_not_called()
 
