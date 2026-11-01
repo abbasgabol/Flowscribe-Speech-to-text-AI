@@ -25,7 +25,7 @@ class Punctuator:
         if not text.strip():
             return text
         # Preserve technical strings, quoted text, numeric punctuation and line structure.
-        if re.search(r'://|[@_/\\`"<>]|\d[.,]\d', text):
+        if re.search(r'://|[@_/\\`"<>]|\d[.,:]\d', text):
             return text
         self.load()
         lines = []
