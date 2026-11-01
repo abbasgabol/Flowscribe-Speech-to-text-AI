@@ -37,7 +37,7 @@ try {
   for (const width of [1440, 390, 320]) {
     await send('Emulation.setDeviceMetricsOverride',{width,height:1000,deviceScaleFactor:1,mobile:width<700});
     await sleep(250);
-    const layout = await evaluate(`({width:innerWidth, scrollWidth:document.documentElement.scrollWidth, title:document.title, images:[...document.images].every(i=>i.complete && i.naturalWidth>0), downloads:[...document.querySelectorAll('a[download]')].map(a=>a.getAttribute('href'))})`);
+    const layout = await evaluate(`({width:innerWidth, scrollWidth:document.documentElement.scrollWidth, title:document.title, images:[...document.images].every(i=>i.complete && i.naturalWidth>0), downloads:[...document.querySelectorAll('a[href$=".exe"]')].map(a=>a.getAttribute('href'))})`);
     if (layout.scrollWidth > layout.width || !layout.images || !layout.downloads.length) throw new Error(JSON.stringify(layout));
     report.push(layout);
     const shot = await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});
@@ -47,7 +47,10 @@ try {
   await sleep(2200);
   const demo = await evaluate(`({text:document.getElementById('example-result').textContent, disabled:document.getElementById('demo-button').disabled})`);
   if (!demo.text.includes('8:30') || demo.disabled) throw new Error('Demo did not finish');
-  const download = await evaluate(`(async()=>{const url=document.querySelector('a[download]').href; const r=await fetch(url,{method:'HEAD'});const release=await (await fetch('downloads/release.json')).json();return {status:r.status,bytes:Number(r.headers.get('content-length')),expected:release.bytes,exe:url.endsWith('/LocalDictation-Setup.exe')}})()`);
-  if(download.status!==200 || !download.exe || download.bytes!==download.expected) throw new Error('Broken download');
+  const url = await evaluate(`document.querySelector('a[href$=".exe"]').href`);
+  const metadata = await (await fetch('http://127.0.0.1:8765/downloads/release.json')).json();
+  const response = await fetch(url, {method:'HEAD'});
+  const download = {status:response.status, bytes:Number(response.headers.get('content-length')), expected:metadata.bytes};
+  if(download.status!==200 || download.bytes!==download.expected) throw new Error('Release asset is not published or is the wrong size');
   console.log(JSON.stringify({layouts:report,demo,download},null,2));
 } finally { ws.close(); }

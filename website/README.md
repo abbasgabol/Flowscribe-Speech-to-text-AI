@@ -10,10 +10,11 @@ Preview with:
 
     .venv\Scripts\python.exe -m http.server 8765 --bind 127.0.0.1 --directory website/dist
 
-The download buttons reference the actual installer EXE in `dist/downloads`.
-`SHA256SUMS.txt` and `release.json` are regenerated alongside the EXE. Keep all three
-together when updating a release. `desktop-preview.png` is captured from the app
-with illustrative transcript content, not a claimed recognition result.
+The primary download buttons point to a GitHub Release asset, hosted separately
+from Vercel. The large EXE stays out of Git; deploying this repository alone will
+not upload it. Follow `../packaging/PUBLISHING.md` to publish the matching release
+before deploying link changes. `release.json` records the asset URL, size and hash.
+The local source ZIP and checksum files remain ordinary static website assets.
 
 The `.openai/hosting.json` file records the private Sites project registration.
 Publication is pending explicit approval: automatic approval review rejected
