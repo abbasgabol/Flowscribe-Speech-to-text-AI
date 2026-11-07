@@ -46,12 +46,12 @@ class App:
         self.root.minsize(620, 600)
         self.events = queue.Queue()
         self.model = None
-        default_model = 'small.en' if (MODEL_DIR.parent / 'small.en' / 'model.bin').exists() else 'base.en'
+        default_model = 'base.en'
         try:
             saved_model = json.loads(SETTINGS_PATH.read_text(encoding='utf-8')).get('model', default_model)
         except (OSError, ValueError, AttributeError):
             saved_model = default_model
-        self.current_model = model_name or (saved_model if saved_model in MODEL_CHOICES.values() else default_model)
+        self.current_model = model_name or (saved_model if saved_model in MODEL_CHOICES.values() and (MODEL_ROOT / saved_model / 'model.bin').is_file() else default_model)
         self.loading = True
         self.persist_settings = persist_settings
         self.stream = None
@@ -76,7 +76,8 @@ class App:
         self.add_space = tk.BooleanVar(value=True)
         self.memory_label = tk.StringVar(value='Measuring memory...')
         from local_dictation.desktop_ui import build
-        build(self, MODEL_CHOICES)
+        build(self, {label: name for label, name in MODEL_CHOICES.items()
+                     if name == 'base.en' or (MODEL_ROOT / name / 'model.bin').is_file()})
         self.root.protocol('WM_DELETE_WINDOW', self.root.withdraw)
         self.hotkey = Hotkey(self.events)
         icon = Image.new('RGB', (64, 64), '#173c42')
@@ -191,7 +192,7 @@ class App:
             return
         if not (MODEL_DIR.parent / selected / 'model.bin').exists():
             self.model_choice.set(next(label for label, name in MODEL_CHOICES.items() if name == self.current_model))
-            self.status.set('Run the installer again and select the Accuracy model.' if FROZEN else 'Accuracy model is not installed. Run scripts/setup_accuracy.bat once.')
+            self.status.set('This model is not included in the lightweight installer.' if FROZEN else 'Accuracy model is not installed. Run scripts/setup_accuracy.bat once.')
             return
         if selected == self.current_model and self.model is not None:
             return

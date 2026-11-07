@@ -14,7 +14,7 @@ drive, model components, and shortcuts. Once downloaded, setup works offline.
 
 - Windows 10/11 x64 and a microphone required.
 - Start with 8 GB RAM and 2 GB free storage; performance varies by PC.
-- Choose Lightweight for lower resource use, or Complete to add Accuracy.
+- The installer includes base.en and punctuation for lower resource use.
 - This beta is unsigned; Windows may display an unknown-publisher warning.
 
 ## Features

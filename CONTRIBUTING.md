@@ -26,7 +26,7 @@ Report skipped checks when submitting a change.
 ## Builds and releases
 
 Install `packaging/build-requirements.txt`, place Inno Setup in `tools/InnoSetup`,
-and download both models. Build into a test directory to preserve published files:
+and download base.en and punctuation. Build into a test directory to preserve published files:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/build_installer.py --output-dir qa/release-check

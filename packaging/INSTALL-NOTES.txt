@@ -1,4 +1,4 @@
-LOCAL DICTATION 0.3.0
+LOCAL DICTATION 0.4.0
 Your voice. Your computer.
 
 This installer includes the app, its Python runtime, and local speech models.
@@ -7,8 +7,8 @@ No separate Python installation, account, API key, or setup download is needed.
 Choose your installation location on the next pages. You may select C:, G:, or
 another writable drive. The program and models are installed in that location.
 
-Lightweight includes the smaller English model and punctuation refinement.
-Complete also installs the larger Accuracy model. Both run on your CPU.
+Includes the base.en English model and punctuation refinement.
+Both run on your CPU. The larger small.en model is not bundled.
 An 8 GB Windows 10/11 x64 PC is the recommended starting point. Speed varies.
 
 HOW TO USE
