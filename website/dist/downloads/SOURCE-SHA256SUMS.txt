@@ -1,1 +1,1 @@
-f99ed34e89fdccfe6c1a99ab043e47c294074d3978ed5da22bab9f52105cd514  Local-Dictation-Source-0.3.0.zip
+6d1178713d46d8cf43791af68ecef12b4bfc2a65e861c65c0a67bd844a20ea10  Local-Dictation-Source-0.4.0.zip

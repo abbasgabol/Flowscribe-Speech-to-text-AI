@@ -1,8 +1,8 @@
 {
-  "version": "0.3.0",
+  "version": "0.4.0",
   "file": "LocalDictation-Setup.exe",
-  "bytes": 672629666,
-  "sha256": "c5146052774010a9deb70ce7456142cfb30d2131355a8f6efcea8a78dbec8919",
+  "bytes": 219873359,
+  "sha256": "31e310bdd8a33ecc76d48b351d4aff5e433b1067648cc3cb2971586188a6731c",
   "type": "windows-offline-installer",
-  "download_url": "https://github.com/abbasgabol/Flowscribe-Speech-to-text-AI/releases/download/v0.3.0/LocalDictation-Setup.exe"
+  "download_url": "https://github.com/abbasgabol/Flowscribe-Speech-to-text-AI/releases/download/v0.4.0/LocalDictation-Setup.exe"
 }

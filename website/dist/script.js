@@ -26,5 +26,5 @@ fetch('downloads/release.json').then(response => {
   if (!response.ok) throw new Error('No release metadata');
   return response.json();
 }).then(release => {
-  document.getElementById('download-size').textContent = `${(release.bytes / (1024 * 1024)).toFixed(0)} MB installer EXE`;
+  document.getElementById('download-size').textContent = `${(release.bytes / 1000000).toFixed(1)} MB installer EXE`;
 }).catch(() => { /* The direct download remains usable without metadata. */ });
