@@ -43,6 +43,23 @@ try {
     const shot = await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});
     writeFileSync(`qa/website-${width}.png`,Buffer.from(shot.data,'base64'));
   }
+  const calculator = await evaluate(`(() => {
+    const set = (id, value) => { const input = document.getElementById(id); input.value = value; input.dispatchEvent(new Event('input')); };
+    const text = id => document.getElementById(id).textContent;
+    const defaults = [text('typing-time'), text('dictation-time'), text('time-saved')];
+    if (defaults.join('|') !== '12.5 min|5.2 min|7.3 min') throw Error('Default calculation is incorrect');
+    set('typing-speed', 200); set('extra-time', 3600);
+    if (!text('saving-description').includes('longer')) throw Error('Negative savings not disclosed');
+    set('typing-speed', 0);
+    if (text('time-saved') !== '—') throw Error('Invalid speed accepted');
+    set('typing-speed', 120); set('speaking-speed', 120); set('extra-time', 0);
+    if (!text('saving-description').includes('same time')) throw Error('Equal times incorrect');
+    set('typing-speed', 40); set('extra-time', 60); set('word-count', 1000);
+    if (text('typing-time') !== '25.0 min') throw Error('Word-count control failed');
+    set('word-count', 500);
+    document.querySelectorAll('details')[1].open = true;
+    return {defaults, negativeSavings: 'passed', invalidInput: 'passed', equalTimes: 'passed', wordCount: 'passed'};
+  })()`);
   await evaluate(`document.getElementById('demo-button').click()`);
   await sleep(2200);
   const demo = await evaluate(`({text:document.getElementById('example-result').textContent, disabled:document.getElementById('demo-button').disabled})`);
@@ -52,5 +69,5 @@ try {
   const response = await fetch(url, {method:'HEAD'});
   const download = {status:response.status, bytes:Number(response.headers.get('content-length')), expected:metadata.bytes};
   if(download.status!==200 || download.bytes!==download.expected) throw new Error('Release asset is not published or is the wrong size');
-  console.log(JSON.stringify({layouts:report,demo,download},null,2));
+  console.log(JSON.stringify({layouts:report,calculator,demo,download},null,2));
 } finally { ws.close(); }

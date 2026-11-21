@@ -28,3 +28,29 @@ fetch('downloads/release.json').then(response => {
 }).then(release => {
   document.getElementById('download-size').textContent = `${(release.bytes / 1000000).toFixed(1)} MB installer EXE`;
 }).catch(() => { /* The direct download remains usable without metadata. */ });
+
+// Transparent task-time estimate: speech time includes user-selected overhead.
+const controls = ['word-count', 'typing-speed', 'speaking-speed', 'extra-time'].map(id => document.getElementById(id));
+function updateEstimate() {
+  if (controls.some(input => !input.validity.valid || input.value === '')) {
+    document.getElementById('time-saved').textContent = '—';
+    document.getElementById('saving-description').textContent = 'Enter values within the indicated limits.';
+    return;
+  }
+  const [words, typing, speaking, extra] = controls.map(input => Number(input.value));
+  const typeMinutes = words / typing;
+  const voiceMinutes = words / speaking + extra / 60;
+  const saved = typeMinutes - voiceMinutes;
+  const max = Math.max(typeMinutes, voiceMinutes);
+  document.getElementById('word-count-label').textContent = words.toLocaleString();
+  document.getElementById('typing-time').textContent = `${typeMinutes.toFixed(1)} min`;
+  document.getElementById('dictation-time').textContent = `${voiceMinutes.toFixed(1)} min`;
+  document.getElementById('typing-bar').style.width = `${typeMinutes / max * 100}%`;
+  document.getElementById('dictation-bar').style.width = `${voiceMinutes / max * 100}%`;
+  document.getElementById('time-saved').textContent = `${Math.abs(saved).toFixed(1)} min`;
+  document.getElementById('saving-description').textContent = saved > .001
+    ? `saved on this task · ${Math.round(saved / typeMinutes * 100)}% less time`
+    : saved < -.001 ? 'longer with dictation in this example' : 'about the same time in this example';
+}
+controls.forEach(input => input.addEventListener('input', updateEstimate));
+updateEstimate();
