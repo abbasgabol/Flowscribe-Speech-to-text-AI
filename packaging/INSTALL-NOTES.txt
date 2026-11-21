@@ -1,4 +1,4 @@
-LOCAL DICTATION 0.4.0
+LOCAL DICTATION 0.4.1
 Your voice. Your computer.
 
 This installer includes the app, its Python runtime, and local speech models.

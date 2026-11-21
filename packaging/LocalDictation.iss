@@ -1,4 +1,4 @@
-#define AppVersion "0.4.0"
+#define AppVersion "0.4.1"
 [Setup]
 AppId={{58F59443-B96A-4609-A794-8815C283B749}
 AppName=Local Dictation

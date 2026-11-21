@@ -3,10 +3,10 @@ import tkinter as tk
 from tkinter import ttk
 from local_dictation.app_paths import FROZEN
 
-BG = '#f5f4ef'
-INK = '#203c35'
-MUTED = '#67766f'
-ACCENT = '#245c48'
+BG = '#faf8f2'
+INK = '#26251f'
+MUTED = '#6b6960'
+ACCENT = '#c54422'
 
 
 def build(app, choices):
@@ -22,17 +22,17 @@ def build(app, choices):
     style.configure('Muted.TLabel', foreground=MUTED)
     style.configure('Title.TLabel', font=('Segoe UI Semibold', 25))
     style.configure('Section.TLabel', font=('Segoe UI Semibold', 13))
-    style.configure('TButton', padding=(14, 9), background='#e6eae2', borderwidth=0)
-    style.map('TButton', background=[('active', '#d8e2d6')])
+    style.configure('TButton', padding=(14, 9), background='#f2e7dc', borderwidth=0)
+    style.map('TButton', background=[('active', '#f5d4be')])
     style.configure('Accent.TButton', background=ACCENT, foreground='white', padding=(22, 12))
-    style.map('Accent.TButton', background=[('disabled', '#d7ddd5'), ('active', '#184735')],
-              foreground=[('disabled', '#748276')])
+    style.map('Accent.TButton', background=[('disabled', '#e6dfd5'), ('active', '#a53519')],
+              foreground=[('disabled', '#71685e')])
     style.configure('TCheckbutton', padding=(0, 7))
     style.configure('TCombobox', padding=7, fieldbackground='white', arrowsize=16)
     style.configure('TNotebook', borderwidth=0)
     style.configure('Nav.TButton', background=BG, padding=(18, 9))
-    style.configure('Selected.Nav.TButton', background='#e2e9db', foreground=ACCENT, padding=(18, 9))
-    style.configure('TNotebook.Tab', padding=(20, 11), background='#e9ebe3')
+    style.configure('Selected.Nav.TButton', background='#f9dfcc', foreground=ACCENT, padding=(18, 9))
+    style.configure('TNotebook.Tab', padding=(20, 11), background='#f1e9df')
     style.map('TNotebook.Tab', background=[('selected', BG)], foreground=[('selected', ACCENT)])
     style.configure('Treeview', background='white', fieldbackground='white', rowheight=32, borderwidth=0)
     style.configure('Treeview.Heading', font=('Segoe UI Semibold', 10), padding=8)
@@ -42,9 +42,9 @@ def build(app, choices):
     header = ttk.Frame(shell)
     header.pack(fill='x')
     ttk.Label(header, text='Local Dictation', style='Title.TLabel').pack(side='left')
-    tk.Label(header, text='●  ON YOUR DEVICE', bg='#e3ebdd', fg=ACCENT,
+    tk.Label(header, text='●  ON YOUR DEVICE', bg='#f9dfcc', fg=ACCENT,
              font=('Segoe UI Semibold', 9), padx=12, pady=7).pack(side='right')
-    ttk.Label(shell, text='A little less typing. A little more flow.', style='Muted.TLabel').pack(anchor='w', pady=(2, 20))
+    ttk.Label(shell, text='Big thoughts. Less typing.', style='Muted.TLabel').pack(anchor='w', pady=(2, 20))
 
     nav = ttk.Frame(shell)
     nav.pack(fill='x', pady=(0, 4))
@@ -64,17 +64,17 @@ def build(app, choices):
     settings_nav.pack(side='left')
     select_page(dictate)
 
-    hero = tk.Frame(dictate, bg=INK, padx=22, pady=18)
+    hero = tk.Frame(dictate, bg=ACCENT, padx=22, pady=18)
     hero.pack(fill='x', pady=(0, 16))
-    tk.Label(hero, text='Your words, wherever you work.', bg=INK, fg='#f7f7ef',
+    tk.Label(hero, text='Your words, wherever you work.', bg=ACCENT, fg='#fffaf3',
              font=('Segoe UI Semibold', 17)).pack(anchor='w')
-    keys = tk.Frame(hero, bg=INK)
+    keys = tk.Frame(hero, bg=ACCENT)
     keys.pack(anchor='w', pady=(12, 0))
     for key in ('Win', '+', 'Alt'):
-        tk.Label(keys, text=key, bg=('#36544a' if key != '+' else INK), fg='white',
+        tk.Label(keys, text=key, bg=('#a53519' if key != '+' else ACCENT), fg='white',
                  font=('Segoe UI Semibold', 11), padx=10, pady=5).pack(side='left', padx=(0, 6))
-    tk.Label(keys, text='Hold to talk. Release to insert.   Esc to cancel.', bg=INK,
-             fg='#d4dfd5', font=('Segoe UI', 10)).pack(side='left', padx=6)
+    tk.Label(keys, text='Hold to talk. Release to insert.   Esc to cancel.', bg=ACCENT,
+             fg='#fff1df', font=('Segoe UI', 10)).pack(side='left', padx=6)
 
     ttk.Label(dictate, textvariable=app.status, wraplength=740, style='Muted.TLabel').pack(anchor='w', pady=(0, 10))
     row = ttk.Frame(dictate)
@@ -82,10 +82,10 @@ def build(app, choices):
     ttk.Label(row, text='Your transcript', style='Section.TLabel').pack(side='left')
     ttk.Button(row, text='Original', command=app.show_original).pack(side='right', padx=(8, 0))
     ttk.Button(row, text='Copy text', command=app.copy).pack(side='right')
-    editor = tk.Frame(dictate, bg='#dce1d6', padx=1, pady=1)
+    editor = tk.Frame(dictate, bg='#dfd8cc', padx=1, pady=1)
     editor.pack(fill='both', expand=True)
     app.output = tk.Text(editor, height=5, wrap='word', font=('Segoe UI', 12), bg='#ffffff',
-                         fg=INK, insertbackground=ACCENT, selectbackground='#d9e8d4',
+                         fg=INK, insertbackground=ACCENT, selectbackground='#f7d3b8',
                          relief='flat', borderwidth=0, padx=16, pady=14, undo=True)
     scrollbar = ttk.Scrollbar(editor, command=app.output.yview)
     scrollbar.pack(side='right', fill='y')

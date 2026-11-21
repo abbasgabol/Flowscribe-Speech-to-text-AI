@@ -80,9 +80,9 @@ class App:
                      if name == 'base.en' or (MODEL_ROOT / name / 'model.bin').is_file()})
         self.root.protocol('WM_DELETE_WINDOW', self.root.withdraw)
         self.hotkey = Hotkey(self.events)
-        icon = Image.new('RGB', (64, 64), '#173c42')
+        icon = Image.new('RGB', (64, 64), '#c54422')
         draw = ImageDraw.Draw(icon)
-        draw.rounded_rectangle((25, 10, 39, 39), radius=7, fill='#a5f3dc')
+        draw.rounded_rectangle((25, 10, 39, 39), radius=7, fill='#fff1df')
         draw.arc((18, 22, 46, 48), 0, 180, fill='white', width=4)
         draw.line((32, 48, 32, 56), fill='white', width=4)
         self.idle_icon = icon
@@ -110,9 +110,9 @@ class App:
     def show_original(self):
         dialog = tk.Toplevel(self.root)
         dialog.title('Original recognition — before punctuation and saved corrections')
-        dialog.configure(bg='#f5f4ef')
+        dialog.configure(bg='#faf8f2')
         field = tk.Text(dialog, width=75, height=12, wrap='word', font=('Segoe UI', 12),
-                        relief='flat', padx=18, pady=18, bg='white', fg='#203c35')
+                        relief='flat', padx=18, pady=18, bg='white', fg='#26251f')
         field.pack(fill='both', expand=True, padx=12, pady=12)
         field.insert('1.0', self.last_raw or 'No transcript yet.')
         field.configure(state='disabled')
@@ -123,7 +123,7 @@ class App:
             return
         dialog = tk.Toplevel(self.root)
         dialog.title('Personal dictionary — only corrections you save')
-        dialog.configure(bg='#f5f4ef')
+        dialog.configure(bg='#faf8f2')
         dialog.geometry('660x450')
         ttk.Label(dialog, text='Save a recurring misheard word or phrase. It will be replaced wherever it occurs.\n'
                   'Your preferred spelling is also a vocabulary hint. No conversations are saved.', wraplength=630).pack(pady=10)
